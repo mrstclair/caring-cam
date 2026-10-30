@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caro Caring Cam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0E1A33; --navy2:#16264A; --navy3:#22355f; --orange:#F7931E; --heart:#E5484D;
+  --ink:#FFFFFF; --muted:#AFC0E0; --ok:#24A865; --radius:22px;
+  --bar:68px; --ctl:222px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--navy);color:var(--ink);font-family:Fredoka,system-ui,sans-serif;overflow:hidden;user-select:none}
+body{height:100vh;height:100dvh}
+button{font-family:inherit;color:inherit;border:0;cursor:pointer}
+.hidden{display:none!important}
+
+/* Header */
+.bar{height:var(--bar);display:flex;align-items:center;gap:12px;padding:0 18px;background:var(--navy2);border-bottom:4px solid var(--orange);min-width:0}
+.bar > *{min-width:0}
+.logo{background:none;font-size:28px;font-weight:700;display:flex;align-items:center;gap:8px;padding:6px 4px;white-space:nowrap;flex-shrink:0}
+.flip{background:var(--navy3);border-radius:999px;padding:8px 14px;font-size:18px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.flip:disabled{opacity:.4}
+.logo small{font-size:15px;font-weight:500;color:var(--muted);margin-left:4px}
+.pill{background:var(--navy3);border-radius:999px;padding:8px 16px;font-size:19px;font-weight:600;display:flex;gap:8px;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.pill .chip{border-radius:999px;padding:2px 12px;color:#fff}
+.spacer{flex:1}
+.pending{background:var(--orange);color:var(--navy);border-radius:999px;padding:6px 14px;font-weight:700;font-size:17px}
+.clock{font-size:24px;font-weight:600;min-width:110px;text-align:right}
+
+/* Screens */
+main{height:calc(100% - var(--bar));position:relative}
+.screen{position:absolute;inset:0;padding:22px 26px;overflow-y:auto;overflow-x:hidden;display:none}
+.screen.on{display:block}
+h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:center}
+.toprow{display:grid;grid-template-columns:150px minmax(0,1fr) 150px;align-items:center;margin-bottom:10px}
+.toprow > *{min-width:0}
+.toprow h1{margin:0}
+.back{background:var(--navy3);border-radius:16px;padding:14px 18px;font-size:20px;font-weight:600;white-space:nowrap}
+
+/* Staff */
+.again{display:flex;justify-content:center;margin-bottom:16px}
+.again button{background:var(--orange);color:var(--navy);border-radius:var(--radius);padding:16px 28px;font-size:24px;font-weight:700;box-shadow:0 6px 0 #b86a0f}
+.group-h{font-size:20px;color:var(--muted);font-weight:600;margin:18px 4px 8px;text-transform:uppercase;letter-spacing:.06em}
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr));gap:14px}
+.staff,.focus,.mode{min-width:0}
+.staff{background:var(--navy2);border:3px solid var(--navy3);border-radius:var(--radius);padding:18px 14px;font-size:24px;font-weight:600;text-align:center;min-height:86px;transition:transform .08s}
+.staff small{display:block;font-size:15px;color:var(--muted);font-weight:500;margin-top:2px}
+.staff:active,.focus:active,.mode:active{transform:scale(.97)}
+.staff.other{border-style:dashed}
+.empty{text-align:center;color:var(--muted);font-size:22px;margin-top:40px}
+
+/* Focus */
+.focus-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;max-width:1200px;margin:0 auto}
+.focus{background:var(--c);border-radius:26px;padding:20px 16px;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 7px 0 rgba(0,0,0,.28);text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.focus .em{font-size:56px;line-height:1}
+.focus .nm{font-size:32px;font-weight:700}
+.focus .pr{font-size:19px;font-weight:500;opacity:.95}
+.focus .hn{font-size:14px;font-weight:400;opacity:.85;max-width:90%;text-align:center;text-shadow:none}
+.focus.general{grid-column:1/-1;min-height:120px;flex-direction:row;gap:18px}
+.focus.general .txt{display:flex;flex-direction:column;align-items:flex-start}
+
+/* Mode */
+.mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;max-width:900px;margin:30px auto 0}
+.mode{background:var(--navy2);border:4px solid var(--orange);border-radius:30px;min-height:300px;font-size:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.mode span{font-size:40px;font-weight:700}
+.mode small{font-size:18px;color:var(--muted)}
+#pickVideo{border-color:var(--heart)}
+
+/* Camera */
+#scr-cam,#scr-review{padding:14px 20px}
+#scr-review{--ctl:150px}
+.stage{position:relative;aspect-ratio:16/9;max-width:100%;
+  height:min(calc(100vh - var(--bar) - var(--ctl)),calc((100vw - 40px)*9/16));
+  height:min(calc(100dvh - var(--bar) - var(--ctl)),calc((100vw - 40px)*9/16));
+  margin:0 auto;border-radius:20px;overflow:hidden;background:#000}
+.stage video,.stage canvas,.stage img{position:absolute;inset:0;width:100%;height:100%}
+#live{object-fit:cover}
+#live.mirror{transform:scaleX(-1)}
+#overlay{pointer-events:none}
+#revImg,#revVid{object-fit:contain;background:#000}
+.count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:260px;font-weight:700;color:#fff;text-shadow:0 8px 30px rgba(0,0,0,.6);animation:pop .9s ease-out}
+@keyframes pop{from{transform:scale(1.6);opacity:0}to{transform:scale(1);opacity:1}}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .45s}
+.flash.go{opacity:1;transition:none}
+.rec{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border-radius:999px;padding:8px 22px;font-size:30px;font-weight:700;display:flex;align-items:center;gap:12px}
+.rec .dot{width:22px;height:22px;border-radius:50%;background:var(--heart);animation:blink 1s infinite}
+.rec.warn{background:var(--heart)}
+.rec.warn .dot{background:#fff}
+@keyframes blink{50%{opacity:.25}}
+.bar-prog{position:absolute;left:0;bottom:0;height:10px;background:var(--heart);width:0}
+.cam-msg{position:absolute;inset:auto 20px 80px 20px;background:rgba(14,26,51,.92);border-radius:16px;padding:14px 18px;font-size:20px;text-align:center}
+.cam-controls{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px;margin-top:14px}
+.cam-controls .back{justify-self:start}
+.rev-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.shoot{white-space:nowrap;background:var(--orange);color:var(--navy);border-radius:999px;padding:18px 54px;font-size:34px;font-weight:700;box-shadow:0 7px 0 #b86a0f}
+.shoot.vid{background:var(--heart);color:#fff;box-shadow:0 7px 0 #9e2a2e}
+.shoot.stop{background:#fff;color:var(--heart);box-shadow:0 7px 0 #bbb}
+.shoot:disabled{opacity:.5}
+
+/* Frame picker */
+.frame-strip{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:10px 2px 4px;max-width:100%;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.frame-strip.locked{opacity:.45;pointer-events:none}
+.fchip{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--navy2);border:3px solid var(--navy3);border-radius:14px;padding:5px 5px 6px;width:118px}
+.fchip.on{border-color:var(--orange);background:var(--navy3);box-shadow:0 0 0 3px rgba(247,147,30,.35)}
+.fthumb{width:104px;height:58px;border-radius:8px;object-fit:cover;display:block;background:#5b6f8f}
+.fthumb.plain{display:flex;align-items:center;justify-content:center;font-size:26px}
+.fname{font-size:13px;font-weight:600;line-height:1.1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px}
+
+/* Review */
+.btn{border-radius:18px;padding:16px 26px;font-size:24px;font-weight:700}
+.btn.go{background:var(--ok);box-shadow:0 6px 0 #17713f}
+.btn.ghost{background:var(--navy3)}
+.note-panel{max-width:900px;margin:12px auto 0}
+.note-panel textarea{width:100%;height:84px;border-radius:14px;border:3px solid var(--orange);background:var(--navy2);color:#fff;font:500 19px Fredoka,sans-serif;padding:10px 14px;resize:none;user-select:text}
+.reminder{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 0}
+
+/* Done */
+#scr-done{text-align:center;padding-top:8vh}
+.done-heart{font-size:120px;animation:beat 1s ease-in-out infinite}
+@keyframes beat{50%{transform:scale(1.12)}}
+#doneWhere{font-size:24px;color:var(--muted);margin:0 0 30px}
+.done-row{display:flex;gap:22px;justify-content:center}
+
+/* Setup */
+#scr-setup{text-align:center;padding-top:12vh}
+#scr-setup p{font-size:22px;color:var(--muted);max-width:760px;margin:10px auto}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);background:#fff;color:var(--navy);border-radius:16px;padding:14px 24px;font-size:20px;font-weight:600;transition:transform .3s,opacity .3s;max-width:90vw;z-index:9;opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Tablet / smaller displays */
+@media (max-width:900px){
+  :root{--bar:58px;--ctl:206px}
+  #scr-review{--ctl:140px}
+  .bar{gap:8px;padding:0 10px}
+  .logo{font-size:22px}
+  .logo small{display:none}
+  .pill{font-size:16px;padding:6px 12px}
+  .clock{font-size:19px;min-width:0}
+  .focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .focus .nm{font-size:26px}
+  .mode{min-height:220px;font-size:72px}
+  .mode span{font-size:32px}
+  .toprow{grid-template-columns:auto minmax(0,1fr) 0;gap:10px}
+  .screen{padding:16px}
+}
+/* Phone upright */
+@media (max-width:560px){
+  .logo .word{display:none}
+  .pill{max-width:none;flex:1}
+  .clock{display:none}
+  .staff{font-size:20px;min-height:70px;padding:12px 8px}
+  .staff-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .focus{min-height:130px;padding:14px 8px}
+  .focus .em{font-size:40px}
+  .focus .nm{font-size:21px}
+  .focus .hn{display:none}
+  .focus.general{flex-direction:column;gap:4px}
+  .focus.general .txt{align-items:center}
+  .mode{min-height:170px;font-size:56px}
+  .mode span{font-size:26px}
+  .back{padding:10px 12px;font-size:17px}
+  .shoot{padding:14px 26px;font-size:24px}
+  .btn{padding:12px 16px;font-size:19px}
+  .count{font-size:140px}
+  .rec{top:44px;font-size:20px;padding:6px 14px}
+  .done-row{flex-direction:column;align-items:center}
+}
+/* Phone sideways / zoomed displays: one compact bottom row */
+@media (max-height:620px){
+  :root{--bar:52px;--ctl:132px}
+  #scr-review{--ctl:80px}
+  .frame-strip{padding:6px 2px 0;gap:6px}
+  .fchip{width:auto;flex-direction:row;padding:4px 10px 4px 4px;border-width:2px}
+  .fthumb{width:56px;height:32px}
+  .fname{max-width:110px}
+  #scr-cam,#scr-review{padding:8px 12px}
+  .cam-controls,.rev-controls{margin-top:8px}
+  .shoot{padding:10px 30px;font-size:22px;box-shadow:0 4px 0 #b86a0f}
+  .btn{padding:9px 16px;font-size:18px}
+  .back{padding:8px 12px;font-size:16px}
+  .reminder{display:none}
+  .note-panel textarea{height:56px}
+  .focus{min-height:110px}
+  .mode{min-height:150px;font-size:54px}
+  .count{font-size:140px}
+  .rec{top:40px;font-size:20px}
+  #scr-done{padding-top:2vh}
+  .done-heart{font-size:70px}
+}
+/* Wide but short displays: Back · frames · Snap on one row */
+@media (max-height:760px) and (min-width:700px){
+  #scr-cam{--ctl:132px}
+  .cam-bottom{display:flex;align-items:center;gap:12px;margin-top:10px}
+  .cam-controls{display:contents}
+  .cam-controls .back{order:1}
+  .frame-strip{order:2;flex:1 1 auto;min-width:0;padding:4px 2px}
+  .shoot{order:3}
+}
+@media (max-height:620px) and (min-width:700px){
+  #scr-cam{--ctl:82px}
+  .cam-bottom{margin-top:6px}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <button id="logo" class="logo" title="Tap 3× to refresh">🐯❤️<span class="word">Caring Cam</span><small>Caro CKH</small></button>
+  <div id="who" class="pill hidden"></div>
+  <div class="spacer"></div>
+  <button id="flip" class="flip hidden" title="Switch between the front and back camera">🔄 Flip</button>
+  <button id="pending" class="pending hidden" title="Photos/videos waiting to upload"></button>
+  <div id="clock" class="clock"></div>
+</header>
+
+<main>
+  <section id="scr-setup" class="screen">
+    <h1>🔌 This kiosk isn't connected yet</h1>
+    <p>Paste the <b>DEFAULT_API</b> and <b>DEFAULT_KEY</b> lines from <b>❤️ Caring Cam ▸ 2. Kiosk link &amp; connection</b> into the top of the script in <code>index.html</code>, then re-upload it to GitHub.</p>
+    <p>For a one-off test, open the long link from that same dialog instead.</p>
+  </section>
+
+  <section id="scr-home" class="screen">
+    <h1>Whose class is sharing a CKH moment?</h1>
+    <div id="again" class="again"></div>
+    <div id="staffWrap"></div>
+  </section>
+
+  <section id="scr-focus" class="screen">
+    <div class="toprow"><button class="back" data-go="home">⬅ Back</button><h1>What kind of CKH moment?</h1><span></span></div>
+    <div id="focusGrid" class="focus-grid"></div>
+  </section>
+
+  <section id="scr-mode" class="screen">
+    <div class="toprow"><button class="back" data-go="focus">⬅ Back</button><h1>Photo or video?</h1><span></span></div>
+    <div class="mode-grid">
+      <button id="pickPhoto" class="mode">📸<span>Photo</span><small>Smile and snap!</small></button>
+      <button id="pickVideo" class="mode">🎥<span>Video</span><small id="vidMax">Up to 60 seconds</small></button>
+    </div>
+  </section>
+
+  <section id="scr-cam" class="screen">
+    <div class="stage">
+      <video id="live" autoplay playsinline muted></video>
+      <canvas id="overlay" width="1280" height="720"></canvas>
+      <div id="count" class="count hidden"></div>
+      <div id="rec" class="rec hidden"><span class="dot"></span><span id="recTime">0:00</span></div>
+      <div id="prog" class="bar-prog"></div>
+      <div id="flash" class="flash"></div>
+      <div id="camMsg" class="cam-msg hidden"></div>
+    </div>
+    <div class="cam-bottom">
+      <div id="frameStrip" class="frame-strip" aria-label="Choose a frame"></div>
+      <div class="cam-controls">
+        <button id="camBack" class="back">⬅ Back</button>
+        <button id="shoot" class="shoot">📸 Snap!</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="scr-review" class="screen">
+    <div class="stage">
+      <img id="revImg" alt="Your photo">
+      <video id="revVid" controls playsinline></video>
+    </div>
+    <div id="notePanel" class="note-panel hidden">
+      <textarea id="note" maxlength="300" placeholder="Optional note for staff: what's happening, where, which CKH process…"></textarea>
+    </div>
+    <div class="rev-controls">
+      <button id="retake" class="btn ghost">🔁 Try again</button>
+      <button id="addNote" class="btn ghost">✏️ Add a note</button>
+      <button id="save" class="btn go">✅ Save</button>
+    </div>
+    <p id="reminder" class="reminder"></p>
+  </section>
+
+  <section id="scr-done" class="screen">
+    <div class="done-heart">❤️</div>
+    <h1>Saved! Thanks for sharing your heart.</h1>
+    <p id="doneWhere"></p>
+    <div class="done-row">
+      <button id="another" class="btn go">➕ Another one</button>
+      <button id="allDone" class="btn ghost">🏠 All done</button>
+    </div>
+  </section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+/* ───────── Constants ───────── */
+// Built-in connection: one public link works on every device.
+// Paste both lines from ❤️ Caring Cam ▸ 2. Kiosk link & connection. Use the /macros/s/…/exec URL, never /a/carok12.org/…
+const DEFAULT_API   = 'https://script.google.com/macros/s/AKfycbz6iIhHjvUQe0Zvh_575UqKxeguHMQAhRj89UMoTy6iyujnBvlly-05E_WXqjPyzO4SmA/exec';
+const DEFAULT_KEY   = '1a478ae7d4';const AUTO_SAVE_SEC = 20;        // review screen auto-saves after this much idle time (0 = off)
+const IDLE_HOME_SEC = 90;        // unattended pick/camera screens return home
+const DONE_HOME_SEC = 10;        // "Saved!" screen returns home
+const AGAIN_MIN     = 15;        // "Same class again" shortcut lifetime
+const JPEG_QUALITY  = 0.88;
+const VIDEO_BPS     = 1500000;   // ≈11 MB per minute
+const RETRY_SEC     = 30;
+const CONFIG_MIN    = 10;
+const W = 1280, H = 720;
+const FRAME_DIR     = 'frames/';  // frame PNGs (+ thumbs/) live next to index.html in the repo
+
+const $ = id => document.getElementById(id);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+const S = {
+  api: '', key: '', kiosk: 'Kiosk', cfg: null,
+  screen: '', staff: null, focus: null, mode: 'photo',
+  stream: null, streamAudio: false, streamFacing: '', noMic: false,
+  facing: 'user', multiCam: false, frame: null, lastDefault: null,
+  busy: false, recording: false, cancel: false,
+  recorder: null, recRaf: 0, recTick: 0,
+  capture: null, lastTouch: Date.now(), autoLeft: 0, doneLeft: 0
+};
+
+/* ───────── Boot ───────── */
+function boot() {
+  // Load order: URL override → built-in values → saved on this device.
+  // Built-in values beat saved ones, so devices set up with an old address fix themselves.
+  const p = new URLSearchParams(location.search);
+  const uApi = p.get('api'), uKey = p.get('key');
+  S.api = uApi || DEFAULT_API || LS.get('hc_api', '');
+  S.key = uKey || DEFAULT_KEY || LS.get('hc_key', '');
+  if (S.api) LS.set('hc_api', S.api);
+  if (S.key) LS.set('hc_key', S.key);
+  if (p.get('kiosk')) LS.set('hc_kiosk', p.get('kiosk'));
+  if (p.has('api') || p.has('key') || p.has('kiosk')) history.replaceState(null, '', location.pathname);
+  S.kiosk = LS.get('hc_kiosk', 'Kiosk');
+  S.facing = LS.get('hc_facing', 'user') === 'environment' ? 'environment' : 'user';
+  const cached = LS.get('hc_cfg', null);
+  S.cfg = cached && cached.api === S.api ? cached : null;
+
+  tickClock(); setInterval(tickClock, 1000);
+  setInterval(watchIdle, 1000);
+  wireUi();
+  Q.open().then(() => { updatePending(); flush(); });
+
+  if (!S.api || !S.key) { go('setup'); return; }
+  if (S.cfg) render();
+  go('home');
+  loadConfig();
+  setInterval(loadConfig, CONFIG_MIN * 60000);
+  setInterval(flush, RETRY_SEC * 1000);
+  if (document.fonts) document.fonts.load('700 40px Fredoka').then(() => drawOverlay());
+}
+
+async function loadConfig() {
+  let msg = '';
+  try {
+    const r = await fetch(`${S.api}?action=config&key=${encodeURIComponent(S.key)}`, { cache: 'no-store' });
+    const text = await r.text();
+    let j;
+    try { j = JSON.parse(text); } catch (e) {
+      throw new Error(/<html|<!doctype/i.test(text)
+        ? 'The server sent a sign-in page. Use the /macros/s/…/exec URL and set access to Anyone.'
+        : 'Unexpected reply from the server.');
+    }
+    if (!j.ok) throw new Error(j.error || 'Config failed.');
+    j.api = S.api;
+    S.cfg = j; LS.set('hc_cfg', j); render();
+    return;
+  } catch (e) {
+    msg = /failed to fetch|networkerror|load failed/i.test(e.message)
+      ? `Can't reach the Caring Cam server (${e.message}). Check Wi-Fi, and check that the web app URL is the /macros/s/…/exec form with access set to Anyone.`
+      : e.message;
+  }
+  if (!S.cfg) $('staffWrap').innerHTML = `<p class="empty">${esc(msg)}<br><br>Tap the logo 3 times to try again.</p>`;
+  else toast('Offline: using the saved class list');
+}
+
+/* ───────── Rendering ───────── */
+function render() {
+  const c = S.cfg; if (!c) return;
+  $('vidMax').textContent = `Up to ${c.maxVideoSec} seconds`;
+  $('reminder').textContent = c.shareReminder || '';
+
+  // Staff grouped by Group, in sheet order
+  const groups = [];
+  const byGroup = {};
+  (c.staff || []).forEach(s => {
+    const g = s.group || 'Staff';
+    if (!byGroup[g]) { byGroup[g] = []; groups.push(g); }
+    byGroup[g].push(s);
+  });
+  const wrap = $('staffWrap'); wrap.innerHTML = '';
+  if (!groups.length) wrap.innerHTML = '<p class="empty">No staff yet. Add names on the Staff tab.</p>';
+  groups.forEach(g => {
+    const h = document.createElement('div'); h.className = 'group-h'; h.textContent = g; wrap.appendChild(h);
+    const grid = document.createElement('div'); grid.className = 'staff-grid';
+    byGroup[g].forEach(s => grid.appendChild(staffBtn(s)));
+    wrap.appendChild(grid);
+  });
+  if (c.otherStaff) {
+    const grid = document.createElement('div'); grid.className = 'staff-grid'; grid.style.marginTop = '18px';
+    const b = staffBtn({ name: c.otherStaff, group: '' }); b.classList.add('other');
+    grid.appendChild(b); wrap.appendChild(grid);
+  }
+
+  // Focus cards (general/catch-all spans the full row)
+  const fg = $('focusGrid'); fg.innerHTML = '';
+  (c.focus || []).forEach(f => {
+    const b = document.createElement('button');
+    const general = f.name === c.general;
+    b.className = 'focus' + (general ? ' general' : '');
+    b.style.setProperty('--c', f.color);
+    b.innerHTML = general
+      ? `<span class="em">${esc(f.emoji)}</span><span class="txt"><span class="nm">${esc(f.name)}</span><span class="pr">${esc(f.prompt)}</span><span class="hn">${esc(f.hint)}</span></span>`
+      : `<span class="em">${esc(f.emoji)}</span><span class="nm">${esc(f.name)}</span><span class="pr">${esc(f.prompt)}</span><span class="hn">${esc(f.hint)}</span>`;
+    b.onclick = () => { S.focus = f; go('mode'); };
+    fg.appendChild(b);
+  });
+  preloadFrames();
+  applyDefaultFrame(false);
+  renderFrameStrip();
+  renderAgain();
+}
+
+function staffBtn(s) {
+  const b = document.createElement('button');
+  b.className = 'staff';
+  b.innerHTML = `${esc(s.name)}${s.group ? `<small>${esc(s.group)}</small>` : ''}`;
+  b.onclick = () => pickStaff(s);
+  return b;
+}
+
+function pickStaff(s) {
+  S.staff = s;
+  LS.set('hc_last', { staff: s, t: Date.now() });
+  go('focus');
+}
+
+function renderAgain() {
+  const last = LS.get('hc_last', null);
+  const el = $('again'); el.innerHTML = '';
+  if (last && Date.now() - last.t < AGAIN_MIN * 60000) {
+    const b = document.createElement('button');
+    b.textContent = `↩ Same class: ${last.staff.name}`;
+    b.onclick = () => pickStaff(last.staff);
+    el.appendChild(b);
+  }
+}
+
+function updateWho() {
+  const el = $('who');
+  const show = ['focus', 'mode', 'cam', 'review'].includes(S.screen) && S.staff;
+  el.classList.toggle('hidden', !show);
+  if (!show) return;
+  el.innerHTML = esc(S.staff.name) + (S.focus && S.screen !== 'focus'
+    ? ` <span class="chip" style="background:${S.focus.color}">${esc(S.focus.emoji)} ${esc(S.focus.name)}</span>` : '');
+}
+
+/* ───────── Navigation ───────── */
+function go(name) {
+  if (S.recording) stopRecording(true);
+  S.cancel = true;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  $('scr-' + name).classList.add('on');
+  S.screen = name;
+  S.lastTouch = Date.now();
+  if (!['cam', 'review'].includes(name)) stopStream();
+  if (name === 'home') { S.focus = null; renderAgain(); $('scr-home').scrollTop = 0; }
+  updateWho();
+  updateFlip();
+}
+
+/** Flip button: only on the camera screen, only with 2+ cameras, locked while busy. */
+function updateFlip() {
+  const b = $('flip');
+  b.classList.toggle('hidden', !(S.multiCam && S.screen === 'cam'));
+  b.disabled = S.busy || S.recording;
+  lockFrames();
+}
+
+async function flipCamera() {
+  if (S.screen !== 'cam' || S.busy || S.recording) return;
+  S.facing = S.facing === 'user' ? 'environment' : 'user';
+  LS.set('hc_facing', S.facing);
+  stopStream();
+  openCamera(S.mode);
+}
+
+function wireUi() {
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+  $('pickPhoto').onclick = () => openCamera('photo');
+  $('pickVideo').onclick = () => openCamera('video');
+  $('camBack').onclick = () => { if (!S.recording) go('mode'); };
+  $('shoot').onclick = shoot;
+  $('retake').onclick = retake;
+  $('save').onclick = save;
+  $('addNote').onclick = () => { $('notePanel').classList.toggle('hidden'); if (!$('notePanel').classList.contains('hidden')) $('note').focus(); };
+  $('another').onclick = () => { S.focus = null; go(S.staff ? 'focus' : 'home'); };
+  $('allDone').onclick = () => go('home');
+  $('pending').onclick = () => flush();
+  $('flip').onclick = flipCamera;
+
+  let taps = [];
+  $('logo').onclick = () => {
+    const now = Date.now(); taps = taps.filter(t => now - t < 1200); taps.push(now);
+    if (taps.length >= 3) { taps = []; toast('Refreshing…'); loadConfig(); flush(); }
+  };
+
+  ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => {
+    S.lastTouch = Date.now();
+    if (S.screen === 'review') S.autoLeft = AUTO_SAVE_SEC;
+    if (S.screen === 'done') S.doneLeft = DONE_HOME_SEC;
+    firstTouch();
+  }, true));
+
+  document.addEventListener('keydown', onKey);
+  $('revVid').addEventListener('play', () => { S.autoLeft = AUTO_SAVE_SEC; });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') requestWake(); });
+}
+
+function onKey(e) {
+  if (e.target && e.target.tagName === 'TEXTAREA') return;
+  const fwd = [' ', 'Enter', 'PageDown', 'ArrowRight'].includes(e.key);
+  const back = ['Escape', 'PageUp', 'ArrowLeft', 'Backspace'].includes(e.key);
+  if (!fwd && !back) return;
+  if (S.screen === 'cam') { e.preventDefault(); fwd ? shoot() : (!S.recording && !S.busy && go('mode')); }
+  else if (S.screen === 'review') { e.preventDefault(); fwd ? save() : retake(); }
+}
+
+let touched = false;
+function firstTouch() {
+  if (touched) return; touched = true;
+  try { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
+  requestWake(); audio();
+}
+let wakeLock = null;
+async function requestWake() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
+
+function watchIdle() {
+  updateFlip();
+  const idle = (Date.now() - S.lastTouch) / 1000;
+  if (['focus', 'mode', 'cam'].includes(S.screen) && !S.recording && !S.busy && idle > IDLE_HOME_SEC) go('home');
+
+  if (S.screen === 'review' && AUTO_SAVE_SEC > 0) {
+    const noteOpen = !$('notePanel').classList.contains('hidden');
+    const playing = !$('revVid').paused && !$('revVid').ended && S.capture && S.capture.kind === 'video';
+    if (!noteOpen && !playing) {
+      S.autoLeft--;
+      $('save').textContent = S.autoLeft <= 10 ? `✅ Save (${Math.max(S.autoLeft, 0)})` : '✅ Save';
+      if (S.autoLeft <= 0) save();
+    } else $('save').textContent = '✅ Save';
+  }
+  if (S.screen === 'done' && --S.doneLeft <= 0) go('home');
+}
+
+/* ───────── Camera ───────── */
+async function openCamera(mode) {
+  S.mode = mode;
+  go('cam');
+  S.cancel = false;
+  const sh = $('shoot');
+  sh.className = 'shoot' + (mode === 'video' ? ' vid' : '');
+  sh.textContent = mode === 'video' ? '🔴 Record' : '📸 Snap!';
+  sh.disabled = true;
+  $('rec').classList.add('hidden'); $('prog').style.width = '0';
+  renderFrameStrip();
+  camMsg('Starting camera…');
+  drawOverlay();
+  try {
+    await getStream(mode === 'video');
+    camMsg(S.noMic && mode === 'video' ? '🎤 No microphone found. This video will be silent.' : '');
+    sh.disabled = false;
+    if (S.noMic && mode === 'video') setTimeout(() => camMsg(''), 3500);
+  } catch (e) {
+    camMsg('📷 The camera is blocked or busy. Ask a grown-up to allow the camera for this page.');
+  }
+}
+
+async function getStream(wantAudio) {
+  const v = $('live');
+  if (S.stream && S.streamFacing === S.facing && (S.streamAudio || !wantAudio)) { v.srcObject = S.stream; return; }
+  stopStream();
+  const videoFor = f => ({ width: { ideal: 1280 }, height: { ideal: 720 },
+    facingMode: f === 'environment' ? { exact: 'environment' } : 'user' });
+  const audio = { echoCancellation: true, noiseSuppression: true };
+
+  // Try: chosen camera (+mic) → chosen camera, no mic → selfie camera fallback.
+  let stream = null, noMic = false;
+  const tries = [];
+  if (wantAudio) tries.push([S.facing, true]);
+  tries.push([S.facing, false]);
+  if (S.facing === 'environment') { if (wantAudio) tries.push(['user', true]); tries.push(['user', false]); }
+  let lastErr = null;
+  for (const [f, mic] of tries) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: videoFor(f), audio: mic ? audio : false });
+      if (f !== S.facing) { S.facing = f; LS.set('hc_facing', f); toast('Back camera unavailable: using the front camera'); }
+      noMic = wantAudio && !mic;
+      break;
+    } catch (e) { lastErr = e; }
+  }
+  if (!stream) throw lastErr || new Error('No camera');
+
+  S.stream = stream;
+  S.streamFacing = S.facing;
+  S.streamAudio = wantAudio;       // don't keep re-asking for a missing mic this visit
+  S.noMic = noMic;
+  v.classList.toggle('mirror', S.facing === 'user');
+  v.srcObject = stream;
+  await v.play().catch(() => {});
+  if (!v.videoWidth) await new Promise(r => v.addEventListener('loadedmetadata', r, { once: true }));
+  detectCameras();
+}
+
+async function detectCameras() {
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    S.multiCam = devs.filter(d => d.kind === 'videoinput').length > 1;
+  } catch (e) { S.multiCam = false; }
+  updateFlip();
+}
+
+function stopStream() {
+  if (S.stream) S.stream.getTracks().forEach(t => t.stop());
+  S.stream = null; S.streamAudio = false; S.streamFacing = '';
+  $('live').srcObject = null;
+}
+
+function camMsg(t) { const m = $('camMsg'); m.textContent = t; m.classList.toggle('hidden', !t); }
+
+function shoot() {
+  if (S.screen !== 'cam') return;
+  if (S.recording) { stopRecording(false); return; }
+  if (S.busy || $('shoot').disabled) return;
+  S.mode === 'video' ? startVideo() : takePhoto();
+}
+
+async function countdown() {
+  S.cancel = false;
+  updateFlip();
+  const el = $('count');
+  for (let n = 3; n >= 1; n--) {
+    if (S.cancel) break;
+    el.textContent = n; el.classList.remove('hidden');
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    beep(660, 0.12);
+    await sleep(1000);
+  }
+  el.classList.add('hidden');
+  return !S.cancel;
+}
+
+async function takePhoto() {
+  S.busy = true; $('shoot').disabled = true;
+  if (!(await countdown())) { S.busy = false; $('shoot').disabled = false; return; }
+  const when = new Date();
+  shutter(); flash();
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  drawCover(ctx, $('live'));
+  drawFrame(ctx, when);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', JPEG_QUALITY));
+  S.busy = false; $('shoot').disabled = false; updateFlip();
+  if (!blob || S.screen !== 'cam') return;
+  showReview({ kind: 'photo', blob, mime: 'image/jpeg', takenAt: when.toISOString(), durationSec: 0, frame: S.frame ? S.frame.name : '' });
+}
+
+function pickMime() {
+  const opts = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  return opts.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+}
+
+async function startVideo() {
+  if (!window.MediaRecorder) { camMsg('This browser cannot record video. Try a photo instead.'); return; }
+  S.busy = true; $('shoot').disabled = true;
+  if (!(await countdown())) { S.busy = false; $('shoot').disabled = false; return; }
+
+  const max = (S.cfg && S.cfg.maxVideoSec) || 60;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  const live = $('live');
+  const paint = () => { drawCover(ctx, live); drawFrame(ctx, new Date()); S.recRaf = requestAnimationFrame(paint); };
+  paint();
+
+  const out = c.captureStream(30);
+  if (S.stream) S.stream.getAudioTracks().forEach(t => out.addTrack(t));
+  const mime = pickMime();
+  let rec;
+  try {
+    rec = new MediaRecorder(out, Object.assign({ videoBitsPerSecond: VIDEO_BPS, audioBitsPerSecond: 96000 }, mime ? { mimeType: mime } : {}));
+  } catch (e) {
+    cancelAnimationFrame(S.recRaf); S.busy = false; $('shoot').disabled = false;
+    camMsg('Video recording is not available on this device.'); return;
+  }
+  const chunks = [];
+  const shotFrame = S.frame ? S.frame.name : '';
+  const t0 = Date.now();
+  const startedAt = new Date();
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    cancelAnimationFrame(S.recRaf); clearInterval(S.recTick);
+    out.getVideoTracks().forEach(t => t.stop());
+    $('rec').classList.add('hidden'); $('prog').style.width = '0';
+    const sh = $('shoot'); sh.className = 'shoot vid'; sh.textContent = '🔴 Record'; sh.disabled = false;
+    S.recording = false; S.busy = false; updateFlip();
+    if (rec._discard || !chunks.length) return;
+    const base = (rec.mimeType || mime || 'video/webm').split(';')[0];
+    const blob = new Blob(chunks, { type: base });
+    showReview({ kind: 'video', blob, mime: base, takenAt: startedAt.toISOString(), durationSec: Math.round((Date.now() - t0) / 1000), frame: shotFrame });
+  };
+  S.recorder = rec;
+  rec.start(1000);
+  S.recording = true; S.busy = false; updateFlip();
+  beep(880, 0.25);
+
+  const sh = $('shoot'); sh.className = 'shoot stop'; sh.textContent = '⏹ Stop'; sh.disabled = false;
+  $('rec').classList.remove('hidden');
+  const tick = () => {
+    const el = (Date.now() - t0) / 1000;
+    const left = Math.max(0, max - el);
+    $('recTime').textContent = fmtSec(el) + ' / ' + fmtSec(max);
+    $('rec').classList.toggle('warn', left <= 10);
+    $('prog').style.width = Math.min(100, el / max * 100) + '%';
+    S.lastTouch = Date.now();
+    if (left <= 0) stopRecording(false);
+  };
+  tick(); S.recTick = setInterval(tick, 250);
+}
+
+function stopRecording(discard) {
+  const r = S.recorder;
+  if (!r || r.state === 'inactive') return;
+  r._discard = !!discard;
+  clearInterval(S.recTick);
+  if (!discard) beep(520, 0.2);
+  r.stop();
+}
+
+/* ───────── Drawing ───────── */
+function drawCover(ctx, v) {
+  const vw = v.videoWidth || W, vh = v.videoHeight || H;
+  const s = Math.max(W / vw, H / vh);
+  const dw = vw * s, dh = vh * s;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  try { ctx.drawImage(v, (W - dw) / 2, (H - dh) / 2, dw, dh); } catch (e) {}
+}
+
+function drawOverlay() {
+  const c = $('overlay'); const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  if (S.screen === 'cam' && S.focus) drawFrame(ctx, new Date());
+}
+
+/* ───────── Frames ───────── */
+const frameImgs = {};   // file → HTMLImageElement (preloaded)
+function frameSrc(file) { return FRAME_DIR + encodeURIComponent(file); }
+function isImageFrame(fr) { return fr && fr.file && fr.file !== 'none' && fr.file !== 'builtin:focus'; }
+
+function preloadFrames() {
+  ((S.cfg && S.cfg.frames) || []).filter(isImageFrame).forEach(fr => {
+    if (frameImgs[fr.file]) return;
+    const im = new Image();
+    im.onload = () => { if (S.frame && S.frame.file === fr.file) drawOverlay(); };
+    im.onerror = () => { im._bad = true; renderFrameStrip(); };
+    im.src = frameSrc(fr.file);
+    frameImgs[fr.file] = im;
+  });
+}
+
+function framesList() {
+  return ((S.cfg && S.cfg.frames) || []).filter(fr => !(frameImgs[fr.file] && frameImgs[fr.file]._bad));
+}
+
+/** Default frame: on first load, when DEFAULT_FRAME changes in the Sheet, or when the chosen one disappears. */
+function applyDefaultFrame(force) {
+  const list = framesList();
+  if (!list.length) { S.frame = { name: 'Focus Color', file: 'builtin:focus' }; return; }
+  const want = (S.cfg && S.cfg.defaultFrame) || '';
+  const changed = want !== S.lastDefault;
+  S.lastDefault = want;
+  const stillThere = S.frame && list.some(f => f.name === S.frame.name);
+  if (force || changed || !stillThere) S.frame = list.find(f => f.name === want) || list[0];
+}
+
+function renderFrameStrip() {
+  const el = $('frameStrip'); el.innerHTML = '';
+  const list = framesList();
+  el.classList.toggle('hidden', list.length < 2);
+  list.forEach(fr => {
+    const b = document.createElement('button');
+    b.className = 'fchip' + (S.frame && S.frame.name === fr.name ? ' on' : '');
+    b.dataset.name = fr.name;
+    let thumb;
+    if (fr.file === 'none') thumb = '<span class="fthumb plain">🚫</span>';
+    else if (fr.file === 'builtin:focus') thumb = `<span class="fthumb plain" style="box-shadow:inset 0 0 0 7px ${S.focus ? S.focus.color : '#F7931E'}"></span>`;
+    else thumb = `<img class="fthumb" alt="" loading="lazy" src="${FRAME_DIR}thumbs/${encodeURIComponent(fr.file.replace(/\.png$/i, '.jpg'))}" onerror="this.src='${frameSrc(fr.file)}'">`;
+    b.innerHTML = `${thumb}<span class="fname">${esc(fr.name)}</span>`;
+    b.onclick = () => pickFrame(fr);
+    el.appendChild(b);
+  });
+  lockFrames();
+}
+
+function pickFrame(fr) {
+  if (S.busy || S.recording) return;
+  S.frame = fr;
+  document.querySelectorAll('.fchip').forEach(c => c.classList.toggle('on', c.dataset.name === fr.name));
+  drawOverlay();
+}
+
+function lockFrames() {
+  const lock = S.busy || S.recording;
+  $('frameStrip').classList.toggle('locked', lock);
+}
+
+function drawFrame(ctx, when) {
+  const f = S.focus || { name: 'CKH', emoji: '❤️', color: '#F7931E' };
+  const label = (S.cfg && S.cfg.label) || 'CARO CARING CAM';
+  const fr = S.frame || { file: 'builtin:focus' };
+  ctx.save();
+  if (fr.file === 'builtin:focus') {
+    ctx.lineWidth = 26; ctx.strokeStyle = f.color;
+    ctx.strokeRect(13, 13, W - 26, H - 26);
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    rr(ctx, 30, 30, W - 60, H - 60, 18); ctx.stroke();
+  } else if (isImageFrame(fr)) {
+    const im = frameImgs[fr.file];
+    if (im && im.complete && im.naturalWidth) { try { ctx.drawImage(im, 0, 0, W, H); } catch (e) {} }
+  }
+  // Top badge
+  ctx.font = '700 40px Fredoka, sans-serif';
+  const title = `${f.emoji} ${f.name.toUpperCase()}`;
+  const tw = ctx.measureText(title).width + 64;
+  ctx.fillStyle = f.color; rr(ctx, (W - tw) / 2, 4, tw, 64, 32); ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(title, W / 2, 38);
+  // Bottom pills
+  const who = S.staff ? `${S.staff.name}${S.staff.group ? ' · ' + S.staff.group : ''}` : '';
+  pill(ctx, `❤️ ${label}${who ? ' · ' + who : ''}`, 48, H - 48, 'left');
+  pill(ctx, stampTime(when), W - 48, H - 48, 'right');
+  ctx.restore();
+}
+
+function pill(ctx, text, x, y, align) {
+  ctx.font = '600 26px Fredoka, sans-serif';
+  const w = ctx.measureText(text).width + 36, h = 46;
+  const left = align === 'right' ? x - w : x;
+  ctx.fillStyle = 'rgba(14,26,51,.82)'; rr(ctx, left, y - h / 2, w, h, 23); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, left + 18, y + 1);
+}
+
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+function stampTime(d) {
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+/* ───────── Review & save ───────── */
+function showReview(cap) {
+  if (S.capture && S.capture.url) URL.revokeObjectURL(S.capture.url);
+  cap.url = URL.createObjectURL(cap.blob);
+  S.capture = cap;
+  const img = $('revImg'), vid = $('revVid');
+  img.classList.toggle('hidden', cap.kind !== 'photo');
+  vid.classList.toggle('hidden', cap.kind !== 'video');
+  if (cap.kind === 'photo') { img.src = cap.url; vid.removeAttribute('src'); vid.load(); }
+  else { vid.src = cap.url; img.removeAttribute('src'); }
+  $('note').value = '';
+  $('notePanel').classList.add('hidden');
+  $('save').textContent = '✅ Save';
+  S.autoLeft = AUTO_SAVE_SEC;
+  go('review');
+}
+
+function retake() {
+  if (S.screen !== 'review') return;
+  $('revVid').pause();
+  clearCapture();
+  go('cam');
+  openCamera(S.mode);
+}
+
+function clearCapture() {
+  if (S.capture && S.capture.url) URL.revokeObjectURL(S.capture.url);
+  S.capture = null;
+}
+
+async function save() {
+  if (S.screen !== 'review' || !S.capture) return;
+  const cap = S.capture;
+  $('revVid').pause();
+  const item = {
+    id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+    kind: cap.kind, blob: cap.blob, mime: cap.mime, takenAt: cap.takenAt, durationSec: cap.durationSec,
+    staff: S.staff ? S.staff.name : '', group: S.staff ? S.staff.group : '',
+    focus: S.focus ? S.focus.name : '', frame: cap.frame || '', note: $('note').value.trim().slice(0, 300)
+  };
+  clearCapture();
+  await Q.add(item);
+  cheer();
+  applyDefaultFrame(true);   // next person starts on the default frame
+  renderFrameStrip();
+  const f = S.focus;
+  $('doneWhere').textContent = f ? `Filed under ${f.emoji} ${f.name}` : '';
+  S.doneLeft = DONE_HOME_SEC;
+  go('done');
+  updatePending();
+  flush();
+}
+
+/* ───────── Upload queue (IndexedDB, survives reloads) ───────── */
+const Q = {
+  db: null, mem: [],
+  open() {
+    return new Promise(res => {
+      try {
+        const r = indexedDB.open('caringcam', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('queue', { keyPath: 'id' });
+        r.onsuccess = () => { this.db = r.result; res(); };
+        r.onerror = () => res();
+      } catch (e) { res(); }
+    });
+  },
+  store(mode) { return this.db.transaction('queue', mode).objectStore('queue'); },
+  async add(it) {
+    if (this.db) { try { await idb(this.store('readwrite').put(it)); return; } catch (e) {} }
+    this.mem.push(it);
+  },
+  async all() {
+    let list = this.mem.slice();
+    if (this.db) { try { list = list.concat(await idb(this.store('readonly').getAll())); } catch (e) {} }
+    return list.sort((a, b) => a.id < b.id ? -1 : 1);
+  },
+  async del(id) {
+    this.mem = this.mem.filter(i => i.id !== id);
+    if (this.db) { try { await idb(this.store('readwrite').delete(id)); } catch (e) {} }
+  }
+};
+function idb(req) { return new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); }); }
+
+let flushing = false;
+async function flush() {
+  if (flushing || !S.api || !S.key) return;
+  flushing = true;
+  try {
+    const items = await Q.all();
+    for (const it of items) {
+      const r = await upload(it);
+      if (r === 'retry') break;
+      await Q.del(it.id);
+      updatePending();
+    }
+  } finally { flushing = false; updatePending(); }
+}
+
+async function upload(it) {
+  try {
+    const data = await blobToDataURL(it.blob);
+    const body = JSON.stringify({
+      key: S.key, id: it.id, kind: it.kind, staff: it.staff, group: it.group, focus: it.focus, frame: it.frame,
+      note: it.note, takenAt: it.takenAt, durationSec: it.durationSec, kiosk: S.kiosk, data
+    });
+    const r = await fetch(S.api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body });
+    const j = await r.json();
+    if (j.ok) return 'ok';
+    if (/too large|unsupported|no media/i.test(j.error || '')) { toast('⚠️ Could not save one item: ' + j.error); return 'drop'; }
+    if (/key/i.test(j.error || '')) toast('⚠️ Kiosk key was rejected. Check DEFAULT_KEY against Settings ▸ KIOSK_KEY.');
+    return 'retry';
+  } catch (e) { return 'retry'; }
+}
+
+function blobToDataURL(blob) {
+  return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsDataURL(blob); });
+}
+
+async function updatePending() {
+  const n = (await Q.all()).length;
+  const el = $('pending');
+  el.classList.toggle('hidden', n === 0);
+  el.textContent = `⏫ ${n} waiting`;
+}
+
+/* ───────── Sound & feedback ───────── */
+let actx = null;
+function audio() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {} return actx; }
+function beep(freq, dur, delay = 0, type = 'sine', vol = 0.25) {
+  const a = audio(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.value = freq;
+  const t = a.currentTime + delay;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
+}
+function shutter() {
+  const a = audio(); if (!a) return;
+  const len = a.sampleRate * 0.12, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const s = a.createBufferSource(), g = a.createGain(); g.gain.value = 0.5;
+  s.buffer = buf; s.connect(g).connect(a.destination); s.start();
+}
+function cheer() { [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.22, i * 0.11, 'triangle', 0.2)); }
+function flash() { const f = $('flash'); f.classList.add('go'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('go'))); }
+
+let toastT = 0;
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 3500); }
+
+/* ───────── Misc ───────── */
+let lastMinute = -1, lastDay = new Date().toDateString();
+function tickClock() {
+  const d = new Date();
+  if (d.toDateString() !== lastDay) { lastDay = d.toDateString(); if (S.api && S.key) loadConfig(); }
+  $('clock').textContent = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  if (S.screen === 'cam' && d.getMinutes() !== lastMinute) { lastMinute = d.getMinutes(); drawOverlay(); }
+}
+function fmtSec(s) { s = Math.floor(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+boot();   // run last, after every const/let above is defined
+</script>
+</body>
+</html>
