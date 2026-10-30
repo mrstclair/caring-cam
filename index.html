@@ -60,8 +60,7 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
 .focus .nm{font-size:32px;font-weight:700}
 .focus .pr{font-size:19px;font-weight:500;opacity:.95}
 .focus .hn{font-size:14px;font-weight:400;opacity:.85;max-width:90%;text-align:center;text-shadow:none}
-.focus.general{grid-column:1/-1;min-height:120px;flex-direction:row;gap:18px}
-.focus.general .txt{display:flex;flex-direction:column;align-items:flex-start}
+.guest-row{margin-bottom:6px}
 
 /* Mode */
 .mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;max-width:900px;margin:30px auto 0}
@@ -92,7 +91,9 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
 .rec.warn .dot{background:#fff}
 @keyframes blink{50%{opacity:.25}}
 .bar-prog{position:absolute;left:0;bottom:0;height:10px;background:var(--heart);width:0}
-.cam-msg{position:absolute;inset:auto 20px 80px 20px;background:rgba(14,26,51,.92);border-radius:16px;padding:14px 18px;font-size:20px;text-align:center}
+.cam-msg{position:absolute;inset:auto 20px 80px 20px;background:rgba(14,26,51,.94);border-radius:16px;padding:14px 18px;font-size:19px;text-align:center;line-height:1.35}
+.cam-msg small{display:block;font-size:15px;color:var(--muted);margin-top:4px}
+.cam-msg .retry{margin-top:10px;background:var(--orange);color:var(--navy);border-radius:12px;padding:8px 18px;font-size:18px;font-weight:700}
 .cam-controls{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px;margin-top:14px}
 .cam-controls .back{justify-self:start}
 .rev-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;margin-top:14px}
@@ -159,8 +160,6 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
   .focus .em{font-size:40px}
   .focus .nm{font-size:21px}
   .focus .hn{display:none}
-  .focus.general{flex-direction:column;gap:4px}
-  .focus.general .txt{align-items:center}
   .mode{min-height:170px;font-size:56px}
   .mode span{font-size:26px}
   .back{padding:10px 12px;font-size:17px}
@@ -393,29 +392,26 @@ function render() {
     byGroup[g].push(s);
   });
   const wrap = $('staffWrap'); wrap.innerHTML = '';
-  if (!groups.length) wrap.innerHTML = '<p class="empty">No staff yet. Add names on the Staff tab.</p>';
+  if (c.otherStaff) {   // Visitor / Guest sits at the top
+    const grid = document.createElement('div'); grid.className = 'staff-grid guest-row';
+    const b = staffBtn({ name: c.otherStaff, group: '' }); b.classList.add('other');
+    grid.appendChild(b); wrap.appendChild(grid);
+  }
+  if (!groups.length) wrap.insertAdjacentHTML('beforeend', '<p class="empty">No staff yet. Add names on the Staff tab.</p>');
   groups.forEach(g => {
     const h = document.createElement('div'); h.className = 'group-h'; h.textContent = g; wrap.appendChild(h);
     const grid = document.createElement('div'); grid.className = 'staff-grid';
     byGroup[g].forEach(s => grid.appendChild(staffBtn(s)));
     wrap.appendChild(grid);
   });
-  if (c.otherStaff) {
-    const grid = document.createElement('div'); grid.className = 'staff-grid'; grid.style.marginTop = '18px';
-    const b = staffBtn({ name: c.otherStaff, group: '' }); b.classList.add('other');
-    grid.appendChild(b); wrap.appendChild(grid);
-  }
 
-  // Focus cards (general/catch-all spans the full row)
+  // Focus cards: all the same size, in Focus-tab order (the catch-all fills the last slot)
   const fg = $('focusGrid'); fg.innerHTML = '';
   (c.focus || []).forEach(f => {
     const b = document.createElement('button');
-    const general = f.name === c.general;
-    b.className = 'focus' + (general ? ' general' : '');
+    b.className = 'focus';
     b.style.setProperty('--c', f.color);
-    b.innerHTML = general
-      ? `<span class="em">${esc(f.emoji)}</span><span class="txt"><span class="nm">${esc(f.name)}</span><span class="pr">${esc(f.prompt)}</span><span class="hn">${esc(f.hint)}</span></span>`
-      : `<span class="em">${esc(f.emoji)}</span><span class="nm">${esc(f.name)}</span><span class="pr">${esc(f.prompt)}</span><span class="hn">${esc(f.hint)}</span>`;
+    b.innerHTML = `<span class="em">${esc(f.emoji)}</span><span class="nm">${esc(f.name)}</span><span class="pr">${esc(f.prompt)}</span><span class="hn">${esc(f.hint)}</span>`;
     b.onclick = () => { S.focus = f; go('mode'); };
     fg.appendChild(b);
   });
@@ -575,7 +571,7 @@ async function openCamera(mode) {
     sh.disabled = false;
     if (S.noMic && mode === 'video') setTimeout(() => camMsg(''), 3500);
   } catch (e) {
-    camMsg('📷 The camera is blocked or busy. Ask a grown-up to allow the camera for this page.');
+    camError(e);
   }
 }
 
@@ -630,6 +626,28 @@ function stopStream() {
 }
 
 function camMsg(t) { const m = $('camMsg'); m.textContent = t; m.classList.toggle('hidden', !t); }
+
+/** Explain why the camera didn't start, and offer a retry. */
+function camError(e) {
+  const n = (e && e.name) || '';
+  const tips = {
+    NotAllowedError: ['📷 Camera access is blocked for this page.',
+      'Click the icon at the left of the address bar ▸ Camera (and Microphone) ▸ Allow, then tap Try again. On school-managed Chromebooks, IT may need to allow it.'],
+    SecurityError: ['📷 Camera access is blocked for this page.',
+      'Allow the camera in the address-bar site settings, then tap Try again.'],
+    NotFoundError: ['📷 No camera was found on this device.',
+      'Plug in or turn on a webcam, then tap Try again.'],
+    NotReadableError: ['📷 Another app is using the camera.',
+      'Close Meet, Zoom, the Camera app, or other tabs using the camera, then tap Try again.'],
+    AbortError: ['📷 The camera didn\'t start.', 'Close other apps using the camera, then tap Try again.'],
+    OverconstrainedError: ['📷 This camera couldn\'t start with the requested settings.', 'Tap Try again.']
+  };
+  const [title, help] = tips[n] || ['📷 The camera didn\'t start.', 'Check the camera permission for this page, then tap Try again.'];
+  const m = $('camMsg');
+  m.innerHTML = `${esc(title)}<small>${esc(help)}${n ? ' (' + esc(n) + ')' : ''}</small><button class="retry" type="button">🔄 Try again</button>`;
+  m.classList.remove('hidden');
+  m.querySelector('.retry').onclick = () => { S.facing = 'user'; LS.set('hc_facing', 'user'); stopStream(); openCamera(S.mode); };
+}
 
 function shoot() {
   if (S.screen !== 'cam') return;
