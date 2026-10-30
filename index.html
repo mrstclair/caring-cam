@@ -204,6 +204,95 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
   #scr-cam{--ctl:82px}
   .cam-bottom{margin-top:6px}
 }
+/* ───────── Photos gallery ───────── */
+.gal{position:fixed;inset:0;z-index:20;background:var(--navy);display:none;flex-direction:column}
+.gal.show{display:flex}
+.gbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--navy2);border-bottom:4px solid var(--orange);flex-wrap:wrap}
+.gbar h2{margin:0;font-size:24px;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtabs{display:flex;gap:8px}
+.gtab,.gBtn{background:var(--navy3);border-radius:12px;padding:10px 16px;font-size:18px;font-weight:600;white-space:nowrap}
+.gtab.on{background:var(--orange);color:var(--navy)}
+.gBtn.on{background:#fff;color:var(--navy)}
+.gBtn:disabled{opacity:.45}
+.gclose{background:var(--heart);border-radius:12px;padding:10px 16px;font-size:18px;font-weight:700}
+.gbody{flex:1;overflow-y:auto;padding:16px 18px 110px}
+.gsub{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.gsub .spacer{flex:1}
+.gempty{text-align:center;color:var(--muted);font-size:20px;margin:50px auto;max-width:640px}
+.gday{font-size:18px;font-weight:700;color:var(--muted);margin:16px 2px 8px;text-transform:uppercase;letter-spacing:.05em}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,46%),1fr));gap:12px}
+.gtile{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#24365e;border:3px solid transparent;padding:0}
+.gtile img{width:100%;height:100%;object-fit:cover;display:block}
+.gtile .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--muted)}
+.gtile .vb{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.65);border-radius:8px;padding:2px 8px;font-size:14px;font-weight:600}
+.gtile .ck{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);border:3px solid #fff;display:none;align-items:center;justify-content:center;font-size:20px;font-weight:700}
+.gsel .gtile .ck{display:flex}
+.gtile.sel{border-color:var(--orange)}
+.gtile.sel .ck{background:var(--orange);color:var(--navy)}
+.gtile.sel .ck::after{content:'✓'}
+.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:14px}
+.gcard{background:var(--navy2);border:3px solid var(--navy3);border-radius:18px;overflow:hidden;text-align:left;padding:0;display:flex;flex-direction:column}
+.gcard .cv{aspect-ratio:16/9;background:#24365e;position:relative}
+.gcard .cv img{width:100%;height:100%;object-fit:cover;display:block}
+.gcard .cv .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px}
+.gcard .meta{padding:10px 14px 12px}
+.gcard .nm{font-size:22px;font-weight:700;display:flex;gap:8px;align-items:center}
+.gcard .nm .dot{width:14px;height:14px;border-radius:50%;flex:0 0 auto}
+.gcard .sm{font-size:15px;color:var(--muted);margin-top:2px}
+.gmore{display:block;margin:18px auto 0}
+.selBar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:var(--navy2);border-top:3px solid var(--orange)}
+.selBar .cnt{font-size:20px;font-weight:700;flex:1 1 auto}
+.selBar .go{background:var(--ok);border-radius:14px;padding:12px 22px;font-size:20px;font-weight:700}
+.selBar .go:disabled{opacity:.45}
+/* PIN pad */
+.pin{max-width:360px;margin:20px auto;text-align:center}
+.pin h3{font-size:26px;margin:0 0 6px}
+.pin p{color:var(--muted);margin:0 0 14px}
+.pdots{display:flex;gap:12px;justify-content:center;margin:0 0 16px;min-height:26px}
+.pdots span{width:22px;height:22px;border-radius:50%;border:3px solid #fff}
+.pdots span.f{background:var(--orange);border-color:var(--orange)}
+.pdots.bad{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.pkeys{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pkeys button{background:var(--navy3);border-radius:16px;font-size:30px;font-weight:700;padding:16px 0}
+.pkeys .ok{background:var(--ok)}
+.perr{color:#FF9AA0;min-height:24px;margin-top:10px;font-weight:600}
+/* Lightbox */
+.lbox{position:fixed;inset:0;z-index:30;background:rgba(5,10,24,.96);display:none;flex-direction:column;padding:12px 16px}
+.lbox.show{display:flex}
+.lbox .lmain{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:10px}
+.lbox img{width:100%;height:100%;object-fit:contain;border-radius:12px}
+.lbox .lnav{background:var(--navy3);border-radius:50%;width:56px;height:56px;font-size:30px;flex:0 0 auto}
+.lbox .lnav:disabled{opacity:.3}
+.lbox .lstage{flex:1;min-width:0;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+.lbox .vnote{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);border-radius:12px;padding:8px 14px;font-size:17px;white-space:nowrap}
+.lbox .linfo{text-align:center;color:var(--muted);font-size:16px;margin:8px 0}
+.lbox .lacts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+/* Send dialog */
+.sdlg{position:fixed;inset:0;z-index:40;background:rgba(5,10,24,.85);display:none;align-items:center;justify-content:center;padding:14px}
+.sdlg.show{display:flex}
+.scard{background:var(--navy2);border:3px solid var(--orange);border-radius:22px;width:min(720px,100%);max-height:100%;overflow-y:auto;padding:18px 20px}
+.scard h2{margin:0 0 10px;font-size:26px}
+.sstrip{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.sstrip .gtile{flex:0 0 120px;border-width:0}
+.slabel{font-weight:700;font-size:17px;margin:12px 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--navy3);border:2px solid var(--navy3);border-radius:999px;padding:8px 14px;font-size:17px;font-weight:600}
+.chip small{color:var(--muted);font-weight:500;margin-left:4px}
+.chip.on{background:var(--orange);border-color:var(--orange);color:var(--navy)}
+.chip.on small{color:var(--navy)}
+.addRow{display:flex;gap:8px;margin-top:10px}
+.addRow input,.scard textarea{flex:1;min-width:0;background:var(--navy);color:#fff;border:2px solid var(--navy3);border-radius:12px;padding:10px 12px;font:500 17px Fredoka,sans-serif;user-select:text}
+.scard textarea{width:100%;resize:vertical}
+.shint{color:var(--muted);font-size:14px;margin-top:6px}
+.serr{color:#FF9AA0;font-weight:600;min-height:22px;margin-top:8px}
+.sacts{display:flex;gap:12px;margin-top:10px}
+.sacts button{flex:1}
+@media (max-width:560px){
+  .gbar h2{font-size:20px;flex-basis:100%}
+  .gtab,.gBtn,.gclose{padding:8px 12px;font-size:16px}
+  .lbox .lnav{width:44px;height:44px;font-size:24px}
+}
 </style>
 </head>
 <body>
@@ -211,6 +300,7 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
   <button id="logo" class="logo" title="Tap 3× to refresh">🐯❤️<span class="word">Caring Cam</span><small>Caro CKH</small></button>
   <div id="who" class="pill hidden"></div>
   <div class="spacer"></div>
+  <button id="photosBtn" class="flip hidden" title="See photos and send them">🖼️ Photos</button>
   <button id="flip" class="flip hidden" title="Switch between the front and back camera">🔄 Flip</button>
   <button id="pending" class="pending hidden" title="Photos/videos waiting to upload"></button>
   <div id="clock" class="clock"></div>
@@ -287,6 +377,60 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
     </div>
   </section>
 </main>
+<!-- Photos gallery -->
+<div id="gal" class="gal" aria-hidden="true">
+  <div class="gbar">
+    <h2 id="gTitle">🖼️ Photos</h2>
+    <div class="gtabs">
+      <button id="tabRecent" class="gtab on">📸 Just taken</button>
+      <button id="tabSaved" class="gtab">🔒 Saved moments</button>
+    </div>
+    <button id="gClose" class="gclose">✕ Close</button>
+  </div>
+  <div id="gBody" class="gbody"></div>
+  <div id="selBar" class="selBar hidden">
+    <span id="selCount" class="cnt">0 selected</span>
+    <button id="selToday" class="gBtn">Select today's</button>
+    <button id="selClear" class="gBtn">Clear</button>
+    <button id="selSend" class="go" disabled>✉️ Send</button>
+  </div>
+</div>
+
+<div id="lbox" class="lbox" aria-hidden="true">
+  <div class="lmain">
+    <button id="lPrev" class="lnav" aria-label="Previous">‹</button>
+    <div class="lstage" id="lStage"></div>
+    <button id="lNext" class="lnav" aria-label="Next">›</button>
+  </div>
+  <div class="linfo" id="lInfo"></div>
+  <div class="lacts">
+    <button id="lDown" class="gBtn">⬇ Download</button>
+    <button id="lDrive" class="gBtn">📁 Open in Drive</button>
+    <button id="lSend" class="gBtn">✉️ Send</button>
+    <button id="lClose" class="gclose">✕ Close</button>
+  </div>
+</div>
+
+<div id="sdlg" class="sdlg" aria-hidden="true">
+  <div class="scard">
+    <h2 id="sTitle">✉️ Send</h2>
+    <div id="sStrip" class="sstrip"></div>
+    <div class="slabel">Send to</div>
+    <div id="sChips" class="chips"></div>
+    <div class="addRow">
+      <input id="sExtra" type="email" inputmode="email" autocomplete="off" placeholder="Add another email">
+      <button id="sAdd" class="gBtn">Add</button>
+    </div>
+    <div id="sHint" class="shint"></div>
+    <div class="slabel">Message</div>
+    <textarea id="sMsg" rows="3" maxlength="1500"></textarea>
+    <div id="sErr" class="serr"></div>
+    <div class="sacts">
+      <button id="sCancel" class="btn ghost">Cancel</button>
+      <button id="sGo" class="btn go">✉️ Send</button>
+    </div>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 
 <script>
@@ -468,6 +612,7 @@ function go(name) {
   if (name === 'home') { S.focus = null; renderAgain(); $('scr-home').scrollTop = 0; }
   updateWho();
   updateFlip();
+  $('photosBtn').classList.toggle('hidden', !['home', 'done'].includes(name));
 }
 
 /** Flip button: only on the camera screen, only with 2+ cameras, locked while busy. */
@@ -499,6 +644,7 @@ function wireUi() {
   $('allDone').onclick = () => go('home');
   $('pending').onclick = () => flush();
   $('flip').onclick = flipCamera;
+  wireGallery();
 
   let taps = [];
   $('logo').onclick = () => {
@@ -519,6 +665,7 @@ function wireUi() {
 }
 
 function onKey(e) {
+  if (G.open) return;
   if (e.target && e.target.tagName === 'TEXTAREA') return;
   const fwd = [' ', 'Enter', 'PageDown', 'ArrowRight'].includes(e.key);
   const back = ['Escape', 'PageUp', 'ArrowLeft', 'Backspace'].includes(e.key);
@@ -699,7 +846,7 @@ async function takePhoto() {
   const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', JPEG_QUALITY));
   S.busy = false; $('shoot').disabled = false; updateFlip();
   if (!blob || S.screen !== 'cam') return;
-  showReview({ kind: 'photo', blob, mime: 'image/jpeg', takenAt: when.toISOString(), durationSec: 0, frame: S.frame ? S.frame.name : '' });
+  showReview({ kind: 'photo', blob, mime: 'image/jpeg', takenAt: when.toISOString(), durationSec: 0, frame: S.frame ? S.frame.name : '', poster: makePoster(c) });
 }
 
 function pickMime() {
@@ -743,7 +890,7 @@ async function startVideo() {
     if (rec._discard || !chunks.length) return;
     const base = (rec.mimeType || mime || 'video/webm').split(';')[0];
     const blob = new Blob(chunks, { type: base });
-    showReview({ kind: 'video', blob, mime: base, takenAt: startedAt.toISOString(), durationSec: Math.round((Date.now() - t0) / 1000), frame: shotFrame });
+    showReview({ kind: 'video', blob, mime: base, takenAt: startedAt.toISOString(), durationSec: Math.round((Date.now() - t0) / 1000), frame: shotFrame, poster: makePoster(c) });
   };
   S.recorder = rec;
   rec.start(1000);
@@ -939,6 +1086,7 @@ async function save() {
     staff: S.staff ? S.staff.name : '', group: S.staff ? S.staff.group : '',
     focus: S.focus ? S.focus.name : '', frame: cap.frame || '', note: $('note').value.trim().slice(0, 300)
   };
+  addRecent(cap);
   clearCapture();
   await Q.add(item);
   cheer();
@@ -1059,6 +1207,421 @@ function tickClock() {
 function fmtSec(s) { s = Math.floor(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+/* ───────── Photos gallery: Just taken (this device) + Saved moments (PIN) + Send ───────── */
+const RECENT_MAX = 16;          // Just taken keeps this many, today only
+const GAL_IDLE_SEC = 120;       // unattended gallery closes (and re-locks)
+const PAGE = 30;
+
+const G = {
+  open: false, tab: 'recent', pin: '', by: 'staff', view: 'groups', group: null,
+  items: [], total: 0, sel: new Set(), selecting: false, lbIndex: -1, lbList: [],
+  contacts: null, chosen: new Set(), extras: [], lastTouch: 0, entry: ''
+};
+const thumbCache = {};          // id → dataURL | '' (no thumb)
+const thumbWait = {};
+let thumbActive = 0; const thumbQueue = [];
+
+/* ── Just taken (stored in this browser only) ── */
+function makePoster(canvas) {
+  try {
+    const c = document.createElement('canvas'); c.width = 640; c.height = 360;
+    c.getContext('2d').drawImage(canvas, 0, 0, 640, 360);
+    return c.toDataURL('image/jpeg', 0.72);
+  } catch (e) { return ''; }
+}
+function recentList() {
+  const today = new Date().toDateString();
+  return (LS.get('hc_recent', []) || []).filter(r => new Date(r.t).toDateString() === today);
+}
+function addRecent(cap) {
+  if (!cap || !cap.poster) return;
+  const list = recentList();
+  list.unshift({ t: cap.takenAt, kind: cap.kind, img: cap.poster, focus: S.focus ? S.focus.name : '',
+    emoji: S.focus ? S.focus.emoji : '', staff: S.staff ? S.staff.name : '', len: cap.durationSec || 0 });
+  while (list.length) {
+    try { localStorage.setItem('hc_recent', JSON.stringify(list.slice(0, RECENT_MAX))); break; }
+    catch (e) { list.pop(); if (!list.length) break; }
+  }
+}
+
+/* ── Open / close ── */
+function openGallery() {
+  G.open = true; G.lastTouch = Date.now();
+  $('gal').classList.add('show'); $('gal').setAttribute('aria-hidden', 'false');
+  showTab('recent');
+}
+function closeGallery() {
+  G.open = false; G.pin = ''; G.contacts = null; G.view = 'groups'; G.group = null;
+  exitSelect(); closeLightbox(); closeSend();
+  $('gal').classList.remove('show'); $('gal').setAttribute('aria-hidden', 'true');
+  S.lastTouch = Date.now();
+}
+function galIdle() {
+  if (G.open && Date.now() - G.lastTouch > GAL_IDLE_SEC * 1000) { closeGallery(); toast('🔒 Photos closed and locked'); }
+}
+
+function showTab(tab) {
+  G.tab = tab;
+  $('tabRecent').classList.toggle('on', tab === 'recent');
+  $('tabSaved').classList.toggle('on', tab === 'saved');
+  exitSelect();
+  if (tab === 'recent') renderRecent();
+  else if (!G.pin) renderPin();
+  else if (G.view === 'items' && G.group) renderItems();
+  else loadGroups();
+}
+
+function renderRecent() {
+  $('gTitle').textContent = '📸 Just taken';
+  const list = recentList();
+  const b = $('gBody');
+  if (!list.length) { b.innerHTML = '<p class="gempty">Nothing yet today. Photos and videos taken on this screen show up here until tomorrow.<br><br>Everything is also saved to Drive. Use 🔒 Saved moments to browse it.</p>'; return; }
+  b.innerHTML = '<div class="ggrid" id="rGrid"></div><p class="shint" style="text-align:center;margin-top:14px">Shown on this device only, today only. Everything is saved to Drive.</p>';
+  const grid = $('rGrid');
+  list.forEach((r, i) => {
+    const t = document.createElement('button'); t.className = 'gtile';
+    t.innerHTML = `<img alt="" src="${r.img}">${r.kind === 'video' ? `<span class="vb">🎥 ${fmtSec(r.len)}</span>` : ''}`;
+    t.onclick = () => openLightbox(list.map(x => ({ recent: true, img: x.img, video: x.kind === 'video', focus: x.focus, emoji: x.emoji, staff: x.staff, taken: x.t, len: x.len })), i);
+    grid.appendChild(t);
+  });
+}
+
+/* ── PIN ── */
+function renderPin(err) {
+  $('gTitle').textContent = '🔒 Saved moments';
+  G.entry = '';
+  $('gBody').innerHTML = `<div class="pin"><h3>Enter the PIN</h3><p>Staff only: browse and send saved photos and videos.</p>
+    <div class="pdots" id="pDots"></div><div class="pkeys" id="pKeys"></div><div class="perr" id="pErr">${err ? esc(err) : ''}</div></div>`;
+  const keys = $('pKeys');
+  ['1','2','3','4','5','6','7','8','9','⌫','0','✓'].forEach(k => {
+    const b = document.createElement('button'); b.textContent = k;
+    if (k === '✓') b.className = 'ok';
+    b.onclick = () => pinKey(k);
+    keys.appendChild(b);
+  });
+  drawDots();
+}
+function drawDots() {
+  const d = $('pDots'); if (!d) return;
+  const n = Math.max(4, G.entry.length);
+  d.innerHTML = Array.from({ length: n }, (_, i) => `<span class="${i < G.entry.length ? 'f' : ''}"></span>`).join('');
+}
+async function pinKey(k) {
+  if (k === '⌫') G.entry = G.entry.slice(0, -1);
+  else if (k === '✓') return pinSubmit();
+  else if (G.entry.length < 8) G.entry += k;
+  drawDots();
+  if (G.entry.length === 4) pinSubmit(true);
+}
+async function pinSubmit(auto) {
+  if (!G.entry) return;
+  const tryPin = G.entry;
+  const r = await gget({ action: 'gallery_check' }, tryPin);
+  if (r.ok) { G.pin = tryPin; loadGroups(); return; }
+  if (r.error === 'pin') {
+    if (auto) return;                      // maybe a longer PIN; wait for ✓
+    G.entry = ''; drawDots();
+    const d = $('pDots'); if (d) { d.classList.remove('bad'); void d.offsetWidth; d.classList.add('bad'); }
+    $('pErr').textContent = 'Wrong PIN. Try again.';
+  } else { $('pErr').textContent = r.error || 'Can\'t reach the server.'; }
+}
+
+/* ── Server calls ── */
+async function gget(params, pinOverride) {
+  try {
+    const q = new URLSearchParams(Object.assign({ key: S.key, pin: pinOverride || G.pin }, params));
+    const r = await fetch(`${S.api}?${q}`, { cache: 'no-store' });
+    const j = await r.json();
+    if (!j.ok && j.error === 'pin' && !pinOverride) { G.pin = ''; renderPin('PIN changed. Enter it again.'); }
+    return j;
+  } catch (e) { return { ok: false, error: 'Can\'t reach the server. Check Wi-Fi.' }; }
+}
+
+function loadThumb(id) {
+  if (id in thumbCache) return Promise.resolve(thumbCache[id]);
+  if (thumbWait[id]) return thumbWait[id];
+  thumbWait[id] = new Promise(res => { thumbQueue.push({ id, res }); pumpThumbs(); });
+  return thumbWait[id];
+}
+function pumpThumbs() {
+  while (thumbActive < 4 && thumbQueue.length) {
+    const { id, res } = thumbQueue.shift(); thumbActive++;
+    gget({ action: 'gallery_thumb', id }).then(j => {
+      thumbCache[id] = j.ok ? (j.data || '') : '';
+      res(thumbCache[id]);
+    }).finally(() => { thumbActive--; delete thumbWait[id]; pumpThumbs(); });
+  }
+}
+function fillThumb(el, id, video) {
+  loadThumb(id).then(src => {
+    if (!el.isConnected) return;
+    const ph = el.querySelector('.ph');
+    if (src) { const im = new Image(); im.alt = ''; im.src = src; el.insertBefore(im, el.firstChild); if (ph) ph.remove(); }
+    else if (ph) ph.textContent = video ? '🎥' : '🚫';
+  });
+}
+
+/* ── Groups (by class / by focus) ── */
+async function loadGroups() {
+  G.view = 'groups'; G.group = null; exitSelect();
+  $('gTitle').textContent = '🔒 Saved moments';
+  const b = $('gBody');
+  b.innerHTML = `<div class="gsub"><button class="gBtn ${G.by === 'staff' ? 'on' : ''}" data-by="staff">👩‍🏫 By class</button>
+    <button class="gBtn ${G.by === 'focus' ? 'on' : ''}" data-by="focus">❤️ By CKH focus</button><span class="spacer"></span>
+    <button class="gBtn" id="gLock">🔒 Lock</button></div><div id="gList"><p class="gempty">Loading…</p></div>`;
+  b.querySelectorAll('[data-by]').forEach(x => x.onclick = () => { G.by = x.dataset.by; loadGroups(); });
+  $('gLock').onclick = () => { G.pin = ''; G.contacts = null; renderPin(); };
+  const j = await gget({ action: 'gallery_groups', by: G.by });
+  if (!G.open || G.view !== 'groups') return;
+  const list = $('gList'); if (!list) return;
+  if (!j.ok) { list.innerHTML = `<p class="gempty">${esc(j.error === 'pin' ? '' : j.error)}</p>`; return; }
+  if (!j.groups.length) { list.innerHTML = '<p class="gempty">No saved moments yet.</p>'; return; }
+  list.innerHTML = '<div class="gcards" id="gCards"></div>';
+  j.groups.forEach(g => {
+    const c = document.createElement('button'); c.className = 'gcard';
+    const counts = `${g.count} item${g.count === 1 ? '' : 's'}${g.videos ? ` · ${g.videos} 🎥` : ''}`;
+    c.innerHTML = `<div class="cv"><span class="ph">${g.coverVideo ? '🎥' : '⏳'}</span></div>
+      <div class="meta"><div class="nm">${g.color ? `<span class="dot" style="background:${esc(g.color)}"></span>` : ''}${g.emoji ? esc(g.emoji) + ' ' : ''}${esc(g.name)}</div>
+      <div class="sm">${g.sub ? esc(g.sub) + ' · ' : ''}${counts} · last ${esc(dayLabel(new Date(g.last)))}</div></div>`;
+    c.onclick = () => openGroup(g);
+    $('gCards').appendChild(c);
+    fillThumb(c.querySelector('.cv'), g.coverId, g.coverVideo);
+  });
+}
+
+async function openGroup(g) {
+  G.view = 'items'; G.group = g; G.items = []; G.total = 0;
+  await loadItems(true);
+}
+async function loadItems(reset) {
+  if (reset) { G.items = []; renderItems(true); }
+  const j = await gget({ action: 'gallery_items', by: G.by, name: G.group.name, offset: G.items.length, limit: PAGE });
+  if (!G.open || G.view !== 'items') return;
+  if (!j.ok) { $('gBody').innerHTML = `<p class="gempty">${esc(j.error || '')}</p>`; return; }
+  G.items = G.items.concat(j.items); G.total = j.total;
+  renderItems();
+}
+function renderItems(loading) {
+  const g = G.group;
+  $('gTitle').textContent = `${g.emoji ? g.emoji + ' ' : ''}${g.name}`;
+  const b = $('gBody');
+  b.classList.toggle('gsel', G.selecting);
+  b.innerHTML = `<div class="gsub"><button class="gBtn" id="gBack">⬅ All ${G.by === 'focus' ? 'focuses' : 'classes'}</button><span class="spacer"></span>
+    <button class="gBtn ${G.selecting ? 'on' : ''}" id="gSelect">${G.selecting ? '✕ Done selecting' : '☑️ Select to send'}</button></div><div id="gDays"></div>`;
+  $('gBack').onclick = loadGroups;
+  $('gSelect').onclick = () => G.selecting ? exitSelect() : enterSelect();
+  if (loading) { $('gDays').innerHTML = '<p class="gempty">Loading…</p>'; return; }
+  if (!G.items.length) { $('gDays').innerHTML = '<p class="gempty">Nothing here yet.</p>'; return; }
+  let curDay = '', grid = null;
+  G.items.forEach((x, i) => {
+    const d = dayLabel(new Date(x.taken));
+    if (d !== curDay) {
+      curDay = d;
+      $('gDays').insertAdjacentHTML('beforeend', `<div class="gday">${esc(d)}</div>`);
+      grid = document.createElement('div'); grid.className = 'ggrid'; $('gDays').appendChild(grid);
+    }
+    const t = document.createElement('button'); t.className = 'gtile' + (G.sel.has(x.id) ? ' sel' : '');
+    t.dataset.id = x.id;
+    t.innerHTML = `<span class="ph">⏳</span>${x.video ? `<span class="vb">🎥 ${x.len ? fmtSec(x.len) : 'Video'}</span>` : ''}<span class="ck"></span>`;
+    t.onclick = () => G.selecting ? toggleSel(x.id, t) : openLightbox(G.items, i);
+    grid.appendChild(t);
+    fillThumb(t, x.id, x.video);
+  });
+  if (G.items.length < G.total) {
+    const m = document.createElement('button'); m.className = 'gBtn gmore';
+    m.textContent = `Show more (${G.total - G.items.length} more)`;
+    m.onclick = () => { m.disabled = true; m.textContent = 'Loading…'; loadItems(false); };
+    $('gDays').appendChild(m);
+  }
+  updateSelBar();
+}
+
+/* ── Select ── */
+function enterSelect() { G.selecting = true; $('gBody').classList.add('gsel'); $('selBar').classList.remove('hidden'); renderItems(); }
+function exitSelect() {
+  G.selecting = false; G.sel.clear();
+  $('gBody').classList.remove('gsel'); $('selBar').classList.add('hidden');
+  if (G.view === 'items' && G.group && G.open && G.tab === 'saved' && $('gSelect')) renderItems();
+}
+function maxItems() { return (G.contacts && G.contacts.maxItems) || 20; }
+function toggleSel(id, el) {
+  if (G.sel.has(id)) G.sel.delete(id);
+  else { if (G.sel.size >= maxItems()) { toast(`Up to ${maxItems()} per email`); return; } G.sel.add(id); }
+  if (el) el.classList.toggle('sel', G.sel.has(id));
+  updateSelBar();
+}
+function updateSelBar() {
+  if (!G.selecting) return;
+  const n = G.sel.size;
+  $('selCount').textContent = `${n} selected`;
+  $('selSend').disabled = !n;
+}
+function selectToday() {
+  const today = new Date().toDateString();
+  G.items.filter(x => new Date(x.taken).toDateString() === today).forEach(x => { if (G.sel.size < maxItems()) G.sel.add(x.id); });
+  document.querySelectorAll('#gDays .gtile').forEach(t => t.classList.toggle('sel', G.sel.has(t.dataset.id)));
+  updateSelBar();
+  if (!G.items.some(x => new Date(x.taken).toDateString() === today)) toast('Nothing from today in this group');
+}
+
+/* ── Lightbox ── */
+function openLightbox(list, i) {
+  G.lbList = list; G.lbIndex = i;
+  $('lbox').classList.add('show'); $('lbox').setAttribute('aria-hidden', 'false');
+  showLightbox();
+}
+function closeLightbox() { $('lbox').classList.remove('show'); $('lbox').setAttribute('aria-hidden', 'true'); G.lbIndex = -1; }
+async function showLightbox() {
+  const x = G.lbList[G.lbIndex]; if (!x) return;
+  const st = $('lStage');
+  $('lPrev').disabled = G.lbIndex <= 0; $('lNext').disabled = G.lbIndex >= G.lbList.length - 1;
+  const when = new Date(x.taken);
+  $('lInfo').textContent = [x.emoji ? x.emoji + ' ' + x.focus : x.focus, x.staff, dayLabel(when) + ' ' + when.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), x.note ? '📝 ' + x.note : ''].filter(Boolean).join(' · ');
+  $('lDown').classList.toggle('hidden', !!x.video);
+  $('lDrive').classList.toggle('hidden', !!x.recent);
+  $('lSend').classList.toggle('hidden', !!x.recent);
+  if (x.recent) {
+    st.innerHTML = `<img alt="" src="${x.img}">${x.video ? '<span class="vnote">🎥 Video saved to Drive</span>' : ''}`;
+    $('lDown').onclick = () => download(x.img, 'caring-cam.jpg');
+    return;
+  }
+  st.innerHTML = '<span class="ph" style="font-size:40px">⏳</span>';
+  const idx = G.lbIndex;
+  const j = x.video ? { ok: true, data: await loadThumb(x.id), url: `https://drive.google.com/file/d/${x.id}/view`, video: true }
+                    : await gget({ action: 'gallery_photo', id: x.id });
+  if (idx !== G.lbIndex) return;
+  if (!j.ok) { st.innerHTML = `<span class="gempty">${esc(j.error || 'Not available')}</span>`; return; }
+  st.innerHTML = (j.data ? `<img alt="" src="${j.data}">` : '<span style="font-size:80px">🎥</span>') +
+    (x.video ? '<span class="vnote">🎥 Tap 📁 Open in Drive to play</span>' : '');
+  const url = j.url || `https://drive.google.com/file/d/${x.id}/view`;
+  $('lDrive').onclick = () => window.open(url, '_blank', 'noopener');
+  $('lDown').onclick = () => j.data && download(j.data, j.name || 'caring-cam.jpg');
+  $('lSend').onclick = () => openSend([x.id]);
+}
+function download(dataUrl, name) {
+  const a = document.createElement('a'); a.href = dataUrl; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ── Send ── */
+async function openSend(ids) {
+  if (!ids.length) return;
+  G.sendIds = ids.slice(); G.extras = []; G.chosen = new Set();
+  $('sErr').textContent = ''; $('sExtra').value = '';
+  $('sdlg').classList.add('show'); $('sdlg').setAttribute('aria-hidden', 'false');
+  $('sTitle').textContent = `✉️ Send ${ids.length} item${ids.length === 1 ? '' : 's'}`;
+  const strip = $('sStrip'); strip.innerHTML = '';
+  const byId = {}; G.items.forEach(x => byId[x.id] = x);
+  ids.forEach(id => {
+    const t = document.createElement('div'); t.className = 'gtile';
+    t.innerHTML = `<span class="ph">⏳</span>${byId[id] && byId[id].video ? '<span class="vb">🎥</span>' : ''}`;
+    strip.appendChild(t); fillThumb(t, id, byId[id] && byId[id].video);
+  });
+  $('sChips').innerHTML = '<span class="shint">Loading contacts…</span>';
+  if (!G.contacts) {
+    const j = await gget({ action: 'gallery_contacts' });
+    if (!j.ok) { $('sChips').innerHTML = `<span class="serr">${esc(j.error || '')}</span>`; return; }
+    G.contacts = j;
+  }
+  const c = G.contacts;
+  $('sMsg').value = c.message || '';
+  $('sHint').textContent = c.domain ? `Typed addresses must end in @${c.domain}. Add anyone else on the sheet's Contacts tab.` : '';
+  // Pre-select the class's own contact when browsing by class
+  if (G.by === 'staff' && G.group) c.contacts.filter(p => p.staff && p.staff.toLowerCase() === G.group.name.toLowerCase()).forEach(p => G.chosen.add(p.email));
+  renderChips();
+  if (c.quota !== null && c.quota !== undefined && c.quota < 5) $('sErr').textContent = `Heads up: only ${c.quota} emails left today.`;
+}
+function renderChips() {
+  const wrap = $('sChips'); wrap.innerHTML = '';
+  const c = G.contacts;
+  if (!c.contacts.length && !G.extras.length) wrap.innerHTML = '<span class="shint">No contacts yet. Add emails on the sheet\'s Contacts tab, or type one below.</span>';
+  c.contacts.forEach(p => wrap.appendChild(chip(p.name, p.role, p.email)));
+  G.extras.forEach(em => wrap.appendChild(chip(em, '', em)));
+}
+function chip(label, sub, email) {
+  const b = document.createElement('button'); b.type = 'button';
+  b.className = 'chip' + (G.chosen.has(email) ? ' on' : '');
+  b.innerHTML = `${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}`;
+  b.onclick = () => { G.chosen.has(email) ? G.chosen.delete(email) : G.chosen.add(email); b.classList.toggle('on', G.chosen.has(email)); };
+  return b;
+}
+function addExtra() {
+  const em = $('sExtra').value.trim().toLowerCase();
+  if (!em) return;
+  const dom = G.contacts && G.contacts.domain;
+  const okShape = /^[^\s@<>(),;:"]+@[^\s@<>(),;:"]+\.[a-z]{2,}$/i.test(em);
+  const known = G.contacts && G.contacts.contacts.some(p => p.email === em);
+  if (!okShape || (!known && dom && !em.endsWith('@' + dom))) {
+    $('sErr').textContent = okShape && dom ? `Use a @${dom} address (or add them to the Contacts tab).` : 'That doesn\'t look like an email address.';
+    return;
+  }
+  $('sErr').textContent = '';
+  if (!known && !G.extras.includes(em)) G.extras.push(em);
+  G.chosen.add(em);                 // keep everyone already chosen
+  $('sExtra').value = '';
+  renderChips();
+}
+function closeSend() { $('sdlg').classList.remove('show'); $('sdlg').setAttribute('aria-hidden', 'true'); }
+async function doSend() {
+  const to = Array.from(G.chosen);
+  if (!to.length) { $('sErr').textContent = 'Pick at least one person.'; return; }
+  const btn = $('sGo'); btn.disabled = true; btn.textContent = 'Sending…'; $('sErr').textContent = '';
+  let j;
+  try {
+    const r = await fetch(S.api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ key: S.key, pin: G.pin, action: 'send', ids: G.sendIds, to, message: $('sMsg').value,
+        groupName: G.group ? G.group.name : '' }) });
+    j = await r.json();
+  } catch (e) { j = { ok: false, error: 'Can\'t reach the server. Check Wi-Fi.' }; }
+  btn.disabled = false; btn.textContent = '✉️ Send';
+  if (!j.ok) {
+    if (j.error === 'pin') { closeSend(); G.pin = ''; renderPin('PIN changed. Enter it again.'); return; }
+    $('sErr').textContent = j.error || 'Couldn\'t send.'; return;
+  }
+  closeSend(); closeLightbox(); exitSelect();
+  cheer();
+  toast(`✉️ Sent to ${j.to.slice(0, 3).join(', ')}${j.to.length > 3 ? ` +${j.to.length - 3}` : ''}`);
+}
+
+/* ── Wiring ── */
+function wireGallery() {
+  $('photosBtn').onclick = openGallery;
+  $('gClose').onclick = closeGallery;
+  $('tabRecent').onclick = () => showTab('recent');
+  $('tabSaved').onclick = () => showTab('saved');
+  $('selToday').onclick = selectToday;
+  $('selClear').onclick = () => { G.sel.clear(); renderItems(); };
+  $('selSend').onclick = () => openSend(Array.from(G.sel));
+  $('lClose').onclick = closeLightbox;
+  $('lPrev').onclick = () => { if (G.lbIndex > 0) { G.lbIndex--; showLightbox(); } };
+  $('lNext').onclick = () => { if (G.lbIndex < G.lbList.length - 1) { G.lbIndex++; showLightbox(); } };
+  $('sCancel').onclick = closeSend;
+  $('sGo').onclick = doSend;
+  $('sAdd').onclick = addExtra;
+  $('sExtra').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addExtra(); } });
+  ['pointerdown', 'keydown', 'scroll', 'input'].forEach(ev =>
+    ['gal', 'lbox', 'sdlg'].forEach(id => $(id).addEventListener(ev, () => { G.lastTouch = Date.now(); }, true)));
+  document.addEventListener('keydown', e => {
+    if (!G.open) return;
+    if ($('lbox').classList.contains('show')) {
+      if (e.key === 'ArrowLeft') $('lPrev').click();
+      else if (e.key === 'ArrowRight') $('lNext').click();
+      else if (e.key === 'Escape') closeLightbox();
+    } else if (G.tab === 'saved' && !G.pin && $('pKeys')) {
+      if (/^[0-9]$/.test(e.key)) pinKey(e.key);
+      else if (e.key === 'Backspace') pinKey('⌫');
+      else if (e.key === 'Enter') pinKey('✓');
+    }
+  });
+  setInterval(galIdle, 5000);
+}
+
+function dayLabel(d) {
+  const t = new Date(); const y = new Date(); y.setDate(t.getDate() - 1);
+  if (d.toDateString() === t.toDateString()) return 'Today';
+  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: d.getFullYear() === t.getFullYear() ? undefined : 'numeric' });
+}
 
 boot();   // run last, after every const/let above is defined
 </script>
