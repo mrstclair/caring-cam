@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Caro Caring Cam",
+  "short_name": "Caring Cam",
+  "description": "McComb's Capturing Kids' Hearts kiosk: snap a photo or short video of a CKH moment, frame it, and save it to Drive.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0E1A33",
+  "theme_color": "#0E1A33",
+  "categories": ["education", "photo"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
