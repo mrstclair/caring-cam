@@ -309,6 +309,33 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
   .gtab,.gBtn,.gclose{padding:8px 12px;font-size:16px}
   .lbox .lnav{width:44px;height:44px;font-size:24px}
 }
+/* ───────── 🐯 Cover faces editor ───────── */
+.cov{position:fixed;inset:0;z-index:50;background:rgba(5,10,24,.97);display:none;flex-direction:column;
+  padding:calc(10px + env(safe-area-inset-top,0px)) calc(14px + env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px))}
+.cov.show{display:flex}
+.cov .chead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.cov .chead h2{margin:0;font-size:24px;flex:1 1 auto}
+.cov .chint{color:var(--muted);font-size:16px}
+.cov .cstage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+.cov canvas{max-width:100%;max-height:100%;border-radius:12px;touch-action:none;cursor:crosshair;background:#000}
+.cov .ctools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.cov .csize{display:flex;align-items:center;gap:8px;background:var(--navy2);border-radius:12px;padding:6px 12px;font-size:16px}
+.cov .csize input{width:180px;accent-color:var(--orange)}
+.cov .ccount{font-weight:700;font-size:18px;min-width:90px;text-align:center}
+.cov .cdone{background:var(--ok);border-radius:14px;padding:12px 22px;font-size:20px;font-weight:700}
+.cov .cdone:disabled{opacity:.5}
+.rev-controls .cover-btn{background:#7A4A12;box-shadow:0 6px 0 #4d2e0a}
+@media (max-width:560px){
+  .cov .chead h2{font-size:20px}
+  .cov .chint{font-size:14px;flex-basis:100%}
+  .cov .csize input{width:120px}
+  .cov .ctools{gap:8px}
+}
+@media (max-height:620px){
+  .cov .chint{display:none}
+  .cov .ctools{margin-top:6px}
+  .cov .cdone{padding:8px 16px;font-size:18px}
+}
 </style>
 </head>
 <body>
@@ -378,6 +405,7 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
     <div class="rev-controls">
       <button id="retake" class="btn ghost">🔁 Try again</button>
       <button id="addNote" class="btn ghost">✏️ Add a note</button>
+      <button id="coverBtn" class="btn cover-btn">🐯 Cover faces</button>
       <button id="save" class="btn go">✅ Save</button>
     </div>
     <p id="reminder" class="reminder"></p>
@@ -423,6 +451,7 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
     <button id="lDown" class="gBtn">⬇ Download</button>
     <button id="lDrive" class="gBtn">📁 Open in Drive</button>
     <button id="lSend" class="gBtn">✉️ Send</button>
+    <button id="lCover" class="gBtn">🐯 Cover faces</button>
     <button id="lClose" class="gclose">✕ Close</button>
   </div>
 </div>
@@ -445,6 +474,23 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
       <button id="sCancel" class="btn ghost">Cancel</button>
       <button id="sGo" class="btn go">✉️ Send</button>
     </div>
+  </div>
+</div>
+<!-- 🐯 Cover faces editor -->
+<div id="cov" class="cov" aria-hidden="true">
+  <div class="chead">
+    <h2>🐯 Cover faces</h2>
+    <span class="chint">Tap a face to put a tiger on it. Drag to move. Drag the ↘ corner, pinch, or use the slider to resize.</span>
+  </div>
+  <div class="cstage" id="cStage"><canvas id="cCanvas"></canvas></div>
+  <div class="ctools">
+    <button id="cAdd" class="gBtn">➕ Add tiger</button>
+    <label class="csize">Size <input id="cSize" type="range" min="4" max="70" value="20"></label>
+    <button id="cDel" class="gBtn">🗑 Remove</button>
+    <button id="cClear" class="gBtn">Clear all</button>
+    <span id="cCount" class="ccount">0 🐯</span>
+    <button id="cCancel" class="gclose">✕ Cancel</button>
+    <button id="cDone" class="cdone">✅ Done</button>
   </div>
 </div>
 <div id="toast" class="toast"></div>
@@ -662,6 +708,8 @@ function wireUi() {
   $('pending').onclick = () => flush();
   $('flip').onclick = flipCamera;
   wireGallery();
+  wireCover();
+  $('coverBtn').onclick = coverReview;
 
   let taps = [];
   $('logo').onclick = () => {
@@ -682,7 +730,7 @@ function wireUi() {
 }
 
 function onKey(e) {
-  if (G.open) return;
+  if (G.open || ED.open) return;
   if (e.target && e.target.tagName === 'TEXTAREA') return;
   const fwd = [' ', 'Enter', 'PageDown', 'ArrowRight'].includes(e.key);
   const back = ['Escape', 'PageUp', 'ArrowLeft', 'Backspace'].includes(e.key);
@@ -706,7 +754,7 @@ function watchIdle() {
   if (['focus', 'mode', 'cam'].includes(S.screen) && !S.recording && !S.busy && idle > IDLE_HOME_SEC) go('home');
 
   if (S.screen === 'review' && AUTO_SAVE_SEC > 0) {
-    const noteOpen = !$('notePanel').classList.contains('hidden');
+    const noteOpen = !$('notePanel').classList.contains('hidden') || ED.open;
     const playing = !$('revVid').paused && !$('revVid').ended && S.capture && S.capture.kind === 'video';
     if (!noteOpen && !playing) {
       S.autoLeft--;
@@ -1088,6 +1136,7 @@ function showReview(cap) {
   vid.classList.toggle('hidden', cap.kind !== 'video');
   if (cap.kind === 'photo') { img.src = cap.url; vid.removeAttribute('src'); vid.load(); }
   else { vid.src = cap.url; img.removeAttribute('src'); }
+  $('coverBtn').classList.toggle('hidden', cap.kind !== 'photo');
   $('note').value = '';
   $('notePanel').classList.add('hidden');
   $('save').textContent = '✅ Save';
@@ -1514,6 +1563,7 @@ async function showLightbox() {
   $('lDown').classList.toggle('hidden', !!x.video);
   $('lDrive').classList.toggle('hidden', !!x.recent);
   $('lSend').classList.toggle('hidden', !!x.recent);
+  $('lCover').classList.add('hidden');
   if (x.recent) {
     st.innerHTML = `<img alt="" src="${x.img}">${x.video ? '<span class="vnote">🎥 Video saved to Drive</span>' : ''}`;
     $('lDown').onclick = () => download(x.img, 'caring-cam.jpg');
@@ -1531,6 +1581,8 @@ async function showLightbox() {
   $('lDrive').onclick = () => window.open(url, '_blank', 'noopener');
   $('lDown').onclick = () => j.data && download(j.data, j.name || 'caring-cam.jpg');
   $('lSend').onclick = () => openSend([x.id]);
+  $('lCover').classList.toggle('hidden', !!x.video || !j.data);
+  $('lCover').onclick = () => j.data && coverSaved(x, j.data);
 }
 function download(dataUrl, name) {
   const a = document.createElement('a'); a.href = dataUrl; a.download = name; document.body.appendChild(a); a.click(); a.remove();
@@ -1654,6 +1706,262 @@ function dayLabel(d) {
   if (d.toDateString() === t.toDateString()) return 'Today';
   if (d.toDateString() === y.toDateString()) return 'Yesterday';
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: d.getFullYear() === t.getFullYear() ? undefined : 'numeric' });
+}
+
+/* ───────── 🐯 Cover faces: tigers over faces, any number, movable + resizable ─────────
+ * Tigers are stored in image coordinates (x, y = center, s = width in px), so the
+ * result is the same at any screen size and the final photo is drawn at full resolution.
+ */
+const ED = { open: false, img: null, tigers: [], sel: -1, drag: null, pointers: new Map(), pinch: null, onDone: null, busy: false };
+const TIGER = '🐯';
+let tigerSprite = null;     // emoji rendered once, trimmed, reused at any size
+
+function getTigerSprite() {
+  if (tigerSprite) return tigerSprite;
+  const n = 512, c = document.createElement('canvas'); c.width = c.height = n;
+  const x = c.getContext('2d');
+  x.font = `${n * 0.8}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(TIGER, n / 2, n / 2);
+  // trim to the drawn pixels so the tiger is centered and sized exactly
+  const d = x.getImageData(0, 0, n, n).data;
+  let x0 = n, y0 = n, x1 = -1, y1 = -1;
+  for (let yy = 0; yy < n; yy++) for (let xx = 0; xx < n; xx++) {
+    if (d[(yy * n + xx) * 4 + 3] > 8) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+  }
+  if (x1 < 0) { tigerSprite = c; return c; }                 // no emoji font: use as-is
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, side = Math.max(w, h);
+  const t = document.createElement('canvas'); t.width = t.height = side;
+  t.getContext('2d').drawImage(c, x0, y0, w, h, (side - w) / 2, (side - h) / 2, w, h);
+  tigerSprite = t;
+  return t;
+}
+
+/** Open the editor on an image (blob URL or data URL). onDone(blob, count) gets a JPEG with tigers burned in. */
+function openCover(src, onDone) {
+  const im = new Image();
+  im.onload = () => {
+    ED.img = im; ED.tigers = []; ED.sel = -1; ED.onDone = onDone; ED.open = true;
+    const cv = $('cCanvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight;
+    $('cov').classList.add('show'); $('cov').setAttribute('aria-hidden', 'false');
+    $('cDone').disabled = false; $('cDone').textContent = '✅ Done';
+    drawCoverEd(); syncCoverUi();
+  };
+  im.onerror = () => toast('Couldn\'t open that photo.');
+  im.src = src;
+}
+function closeCover() {
+  ED.open = false; ED.drag = null; ED.pinch = null; ED.pointers.clear();
+  $('cov').classList.remove('show'); $('cov').setAttribute('aria-hidden', 'true');
+  S.lastTouch = Date.now();
+  if (S.screen === 'review') S.autoLeft = AUTO_SAVE_SEC;
+}
+
+function defaultSize() { return Math.round(Math.min(ED.img.naturalWidth, ED.img.naturalHeight) * 0.26); }
+function minSize() { return Math.max(24, Math.round(Math.min(ED.img.naturalWidth, ED.img.naturalHeight) * 0.04)); }
+function maxSize() { return Math.round(Math.min(ED.img.naturalWidth, ED.img.naturalHeight) * 0.95); }
+function clampSize(s) { return Math.max(minSize(), Math.min(maxSize(), s)); }
+function clampPos(t) {
+  const W = ED.img.naturalWidth, H = ED.img.naturalHeight;
+  t.x = Math.max(0, Math.min(W, t.x)); t.y = Math.max(0, Math.min(H, t.y));
+}
+
+function drawTigers(ctx, tigers, showSel) {
+  const spr = getTigerSprite();
+  tigers.forEach((t, i) => {
+    ctx.drawImage(spr, t.x - t.s / 2, t.y - t.s / 2, t.s, t.s);
+    if (showSel && i === ED.sel) {
+      const lw = Math.max(3, t.s * 0.025);
+      ctx.save();
+      ctx.lineWidth = lw; ctx.strokeStyle = '#F7931E'; ctx.setLineDash([lw * 3, lw * 2]);
+      ctx.strokeRect(t.x - t.s / 2, t.y - t.s / 2, t.s, t.s);
+      ctx.setLineDash([]);
+      // resize handle (bottom-right)
+      const hr = handleR();
+      ctx.fillStyle = '#F7931E'; ctx.strokeStyle = '#fff'; ctx.lineWidth = lw;
+      ctx.beginPath(); ctx.arc(t.x + t.s / 2, t.y + t.s / 2, hr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#0E1A33'; ctx.font = `700 ${hr * 1.2}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('↘', t.x + t.s / 2, t.y + t.s / 2 + hr * 0.05);
+      ctx.restore();
+    }
+  });
+}
+function drawCoverEd() {
+  const cv = $('cCanvas'), ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(ED.img, 0, 0);
+  drawTigers(ctx, ED.tigers, true);
+}
+function syncCoverUi() {
+  const n = ED.tigers.length;
+  $('cCount').textContent = `${n} 🐯`;
+  $('cDel').disabled = ED.sel < 0;
+  $('cClear').disabled = !n;
+  const sl = $('cSize');
+  sl.disabled = ED.sel < 0;
+  if (ED.sel >= 0) {
+    const pct = ED.tigers[ED.sel].s / Math.min(ED.img.naturalWidth, ED.img.naturalHeight) * 100;
+    sl.value = Math.round(Math.max(+sl.min, Math.min(+sl.max, pct)));
+  }
+}
+
+/* screen px → image px */
+function canvasScale() { const r = $('cCanvas').getBoundingClientRect(); return { r, k: $('cCanvas').width / r.width }; }
+function toImg(e) { const { r, k } = canvasScale(); return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k, k }; }
+function handleR() { return Math.max(14, 22 * canvasScale().k); }     // ~22 screen px, any image size
+
+function hitTiger(p) {
+  for (let i = ED.tigers.length - 1; i >= 0; i--) {
+    const t = ED.tigers[i];
+    if (Math.abs(p.x - t.x) <= t.s / 2 && Math.abs(p.y - t.y) <= t.s / 2) return i;
+  }
+  return -1;
+}
+function hitHandle(p) {
+  if (ED.sel < 0) return false;
+  const t = ED.tigers[ED.sel], hr = handleR() * 1.6;
+  return Math.hypot(p.x - (t.x + t.s / 2), p.y - (t.y + t.s / 2)) <= hr;
+}
+function addTiger(x, y) {
+  const t = { x, y, s: ED.sel >= 0 ? ED.tigers[ED.sel].s : defaultSize() };   // new tigers match the last size
+  clampPos(t);
+  ED.tigers.push(t); ED.sel = ED.tigers.length - 1;
+  drawCoverEd(); syncCoverUi();
+}
+
+function covDown(e) {
+  if (!ED.open) return;
+  e.preventDefault();
+  $('cCanvas').setPointerCapture(e.pointerId);
+  ED.pointers.set(e.pointerId, toImg(e));
+  if (ED.pointers.size === 2 && ED.sel >= 0) {           // pinch to resize the selected tiger
+    const [a, b] = [...ED.pointers.values()];
+    ED.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: ED.tigers[ED.sel].s };
+    ED.drag = null; return;
+  }
+  const p = toImg(e);
+  if (hitHandle(p)) { const t = ED.tigers[ED.sel]; ED.drag = { mode: 'size', cx: t.x, cy: t.y }; return; }
+  const i = hitTiger(p);
+  if (i >= 0) {
+    ED.sel = i;
+    const t = ED.tigers[i];
+    ED.drag = { mode: 'move', dx: p.x - t.x, dy: p.y - t.y };
+    ED.tigers.push(ED.tigers.splice(i, 1)[0]); ED.sel = ED.tigers.length - 1;   // bring to front
+  } else {
+    addTiger(p.x, p.y);
+    ED.drag = { mode: 'move', dx: 0, dy: 0 };
+  }
+  drawCoverEd(); syncCoverUi();
+}
+function covMove(e) {
+  if (!ED.open || !ED.pointers.has(e.pointerId)) return;
+  e.preventDefault();
+  ED.pointers.set(e.pointerId, toImg(e));
+  if (ED.pinch && ED.pointers.size >= 2 && ED.sel >= 0) {
+    const [a, b] = [...ED.pointers.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    ED.tigers[ED.sel].s = clampSize(ED.pinch.s * d / Math.max(1, ED.pinch.d));
+    drawCoverEd(); syncCoverUi(); return;
+  }
+  if (!ED.drag || ED.sel < 0) return;
+  const p = toImg(e), t = ED.tigers[ED.sel];
+  if (ED.drag.mode === 'move') { t.x = p.x - ED.drag.dx; t.y = p.y - ED.drag.dy; clampPos(t); }
+  else { t.s = clampSize(2 * Math.max(Math.abs(p.x - ED.drag.cx), Math.abs(p.y - ED.drag.cy))); }
+  drawCoverEd(); syncCoverUi();
+}
+function covUp(e) {
+  ED.pointers.delete(e.pointerId);
+  if (ED.pointers.size < 2) ED.pinch = null;
+  if (!ED.pointers.size) ED.drag = null;
+}
+function covWheel(e) {
+  if (!ED.open || ED.sel < 0) return;
+  e.preventDefault();
+  const t = ED.tigers[ED.sel];
+  t.s = clampSize(t.s * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+  drawCoverEd(); syncCoverUi();
+}
+
+async function finishCover() {
+  if (ED.busy) return;
+  const n = ED.tigers.length;
+  if (!n) { closeCover(); return; }
+  ED.busy = true; $('cDone').disabled = true; $('cDone').textContent = 'Saving…';
+  const c = document.createElement('canvas'); c.width = ED.img.naturalWidth; c.height = ED.img.naturalHeight;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(ED.img, 0, 0);
+  drawTigers(ctx, ED.tigers, false);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', JPEG_QUALITY));
+  const poster = makePoster(c);
+  ED.busy = false;
+  const cb = ED.onDone;
+  closeCover();
+  if (blob && cb) cb(blob, n, poster);
+}
+
+function wireCover() {
+  const cv = $('cCanvas');
+  cv.addEventListener('pointerdown', covDown);
+  cv.addEventListener('pointermove', covMove);
+  cv.addEventListener('pointerup', covUp);
+  cv.addEventListener('pointercancel', covUp);
+  cv.addEventListener('wheel', covWheel, { passive: false });
+  $('cAdd').onclick = () => {
+    const W = ED.img.naturalWidth, H = ED.img.naturalHeight, k = ED.tigers.length % 5;
+    addTiger(W / 2 + (k - 2) * W * 0.08, H / 2);                // staggered so they don't stack exactly
+  };
+  $('cSize').oninput = e => {
+    if (ED.sel < 0) return;
+    ED.tigers[ED.sel].s = clampSize(+e.target.value / 100 * Math.min(ED.img.naturalWidth, ED.img.naturalHeight));
+    drawCoverEd();
+  };
+  $('cDel').onclick = () => { if (ED.sel < 0) return; ED.tigers.splice(ED.sel, 1); ED.sel = ED.tigers.length - 1; drawCoverEd(); syncCoverUi(); };
+  $('cClear').onclick = () => { ED.tigers = []; ED.sel = -1; drawCoverEd(); syncCoverUi(); };
+  $('cCancel').onclick = closeCover;
+  $('cDone').onclick = finishCover;
+  document.addEventListener('keydown', e => {
+    if (!ED.open) return;
+    if (e.target && e.target.tagName === 'INPUT') return;
+    e.stopPropagation();
+    if (e.key === 'Escape') { e.preventDefault(); closeCover(); }
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && ED.sel >= 0) { e.preventDefault(); $('cDel').click(); }
+    else if (e.key === 'Enter') { e.preventDefault(); finishCover(); }
+    else if ((e.key === '+' || e.key === '=') && ED.sel >= 0) { e.preventDefault(); covWheel({ preventDefault() {}, deltaY: -1 }); }
+    else if (e.key === '-' && ED.sel >= 0) { e.preventDefault(); covWheel({ preventDefault() {}, deltaY: 1 }); }
+  }, true);
+  ['pointerdown', 'keydown', 'input'].forEach(ev => $('cov').addEventListener(ev, () => {
+    S.lastTouch = Date.now(); G.lastTouch = Date.now();
+    if (S.screen === 'review') S.autoLeft = AUTO_SAVE_SEC;
+  }, true));
+}
+
+/* Review screen: cover faces on the photo that was just taken */
+function coverReview() {
+  if (S.screen !== 'review' || !S.capture || S.capture.kind !== 'photo') return;
+  $('revVid').pause();
+  openCover(S.capture.url, (blob, n, poster) => {
+    if (!S.capture) return;
+    URL.revokeObjectURL(S.capture.url);
+    S.capture.blob = blob; S.capture.url = URL.createObjectURL(blob);
+    S.capture.poster = poster || S.capture.poster;
+    S.capture.covered = (S.capture.covered || 0) + n;
+    $('revImg').src = S.capture.url;
+    toast(`🐯 ${n} face${n === 1 ? '' : 's'} covered`);
+  });
+}
+
+/* Saved moments: make a covered COPY (the original stays in Drive) */
+function coverSaved(x, dataUrl) {
+  openCover(dataUrl, async (blob, n) => {
+    const item = {
+      id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+      kind: 'photo', blob, mime: 'image/jpeg', takenAt: x.taken, durationSec: 0,
+      staff: x.staff === '(none)' ? '' : x.staff, group: x.group || '', focus: x.focus === '(none)' ? '' : x.focus,
+      frame: '', note: ('🐯 Covered copy' + (x.note ? ' · ' + x.note : '')).slice(0, 300)
+    };
+    await Q.add(item); updatePending(); flush();
+    toast('🐯 Covered copy is saving to Drive. The original is still there; delete it in Drive if needed.');
+  });
 }
 
 /* Installable app: register the service worker (https only, never file://) */
