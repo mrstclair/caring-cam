@@ -1,0 +1,26 @@
+CARO CARING CAM: INSTALLABLE APP UPDATE
+=======================================
+
+UPLOAD TO GITHUB (github.com/mrstclair/caring-cam)
+1. Unzip caring-cam-app.zip. Open the caring-cam folder inside it.
+2. In the repo: Add file > Upload files.
+3. Drag in EVERYTHING inside the caring-cam folder:
+     index.html, manifest.webmanifest, sw.js, the icons folder, the frames folder
+   (Drag the icons folder as a folder. GitHub keeps its name. Replacing index.html and frames is fine.)
+   Skip INSTALL-STEPS.txt; it's just these notes.
+4. Commit changes. Wait about 1 minute (Actions tab shows a green check).
+5. Check: https://mrstclair.github.io/caring-cam/icons/icon-512.png shows the icon.
+
+ADD TO HOME SCREEN
+- iPhone/iPad: open the link in SAFARI > Share (square with up arrow) > Add to Home Screen > Add.
+- Android: open the link in CHROME > menu (three dots) > Install app (or "Add to Home screen") > Install.
+- Chromebook / Windows / Mac (Chrome or Edge): click the install icon at the right end of the
+  address bar (a monitor with a down arrow), or menu > Cast, save, and share > Install page as app.
+  On a Chromebook it then appears in the launcher and can be pinned to the shelf.
+
+NOTES
+- The regular link still works in any browser tab. Installing is optional.
+- If a phone already saved an older shortcut to this page, delete that icon and add it again
+  to get the new CKH Caro icon (phones keep the old icon otherwise).
+- Allow the camera/microphone once inside the installed app the first time you use it.
+- Updates: when you upload a new index.html, the app picks it up the next time it opens online.
