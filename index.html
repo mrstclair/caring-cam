@@ -81,6 +81,11 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
 .mode span{font-size:40px;font-weight:700}
 .mode small{font-size:18px;color:var(--muted)}
 #pickVideo{border-color:var(--heart)}
+.mode.up{grid-column:1/-1;min-height:0;flex-direction:row;gap:18px;padding:18px 22px;font-size:54px;border-color:#2E9CDB}
+.mode.up span{font-size:30px}
+.mode.up small{font-size:17px}
+.mode.up{text-align:left}
+@media (max-width:560px){.mode.up{font-size:40px;gap:12px;padding:14px}.mode.up span{font-size:22px}.mode.up small{display:none}}
 
 /* Camera */
 #scr-cam,#scr-review{padding:14px 20px}
@@ -336,6 +341,12 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
   .cov .ctools{margin-top:6px}
   .cov .cdone{padding:8px 16px;font-size:18px}
 }
+/* Upload mode on narrow screens: Back + Choose another on one row, Use photo full width below */
+@media (max-width:699px){
+  #scr-cam.upmode{--ctl:250px}
+  #scr-cam.upmode .cam-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+  #scr-cam.upmode .cam-controls .shoot{flex:1 1 100%;order:3}
+}
 </style>
 </head>
 <body>
@@ -372,12 +383,15 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
     <div class="mode-grid">
       <button id="pickPhoto" class="mode">📸<span>Photo</span><small>Smile and snap!</small></button>
       <button id="pickVideo" class="mode">🎥<span>Video</span><small id="vidMax">Up to 60 seconds</small></button>
+      <button id="pickUpload" class="mode up">📤<span>Upload a photo</span><small>Already took one? Add a frame and share it</small></button>
     </div>
+    <input id="upFile" type="file" accept="image/*" hidden>
   </section>
 
   <section id="scr-cam" class="screen">
     <div class="stage">
       <video id="live" autoplay playsinline muted></video>
+      <canvas id="upCanvas" class="hidden" width="1280" height="720"></canvas>
       <canvas id="overlay" width="1280" height="720"></canvas>
       <div id="count" class="count hidden"></div>
       <div id="rec" class="rec hidden"><span class="dot"></span><span id="recTime">0:00</span></div>
@@ -389,6 +403,7 @@ h1{margin:0 0 18px;font-size:clamp(24px,4vw,44px);font-weight:700;text-align:cen
       <div id="frameStrip" class="frame-strip" aria-label="Choose a frame"></div>
       <div class="cam-controls">
         <button id="camBack" class="back">⬅ Back</button>
+        <button id="upAgain" class="back hidden">📤 Choose another</button>
         <button id="shoot" class="shoot">📸 Snap!</button>
       </div>
     </div>
@@ -681,7 +696,7 @@ function go(name) {
 /** Flip button: only on the camera screen, only with 2+ cameras, locked while busy. */
 function updateFlip() {
   const b = $('flip');
-  b.classList.toggle('hidden', !(S.multiCam && S.screen === 'cam'));
+  b.classList.toggle('hidden', !(S.multiCam && S.screen === 'cam' && S.mode !== 'upload'));
   b.disabled = S.busy || S.recording;
   lockFrames();
 }
@@ -697,6 +712,9 @@ async function flipCamera() {
 function wireUi() {
   document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
   $('pickPhoto').onclick = () => openCamera('photo');
+  $('pickUpload').onclick = pickUploadFile;
+  $('upFile').addEventListener('change', onUploadChosen);
+  $('upAgain').onclick = pickUploadFile;
   $('pickVideo').onclick = () => openCamera('video');
   $('camBack').onclick = () => { if (!S.recording) go('mode'); };
   $('shoot').onclick = shoot;
@@ -767,6 +785,8 @@ function watchIdle() {
 
 /* ───────── Camera ───────── */
 async function openCamera(mode) {
+  if (mode === 'upload') { openUploadScreen(); return; }
+  endUploadMode();
   S.mode = mode;
   go('cam');
   S.cancel = false;
@@ -881,6 +901,7 @@ function shoot() {
   if (S.screen !== 'cam') return;
   if (S.recording) { stopRecording(false); return; }
   if (S.busy || $('shoot').disabled) return;
+  if (S.mode === 'upload') { useUploadedPhoto(); return; }
   S.mode === 'video' ? startVideo() : takePhoto();
 }
 
@@ -997,7 +1018,7 @@ function drawCover(ctx, v) {
 function drawOverlay() {
   const c = $('overlay'); const ctx = c.getContext('2d');
   ctx.clearRect(0, 0, W, H);
-  if (S.screen === 'cam' && S.focus) drawFrame(ctx, new Date());
+  if (S.screen === 'cam' && S.focus) drawFrame(ctx, S.mode === 'upload' && UP.when ? UP.when : new Date());
 }
 
 /* ───────── Frames ───────── */
@@ -1048,6 +1069,14 @@ function renderFrameStrip() {
   lb.innerHTML = `<span class="fthumb plain">${S.badge !== false ? '🏷️' : '🖼️'}</span><span class="fname">${S.badge !== false ? 'Label: On' : 'Frame only'}</span>`;
   lb.onclick = () => { if (S.busy || S.recording) return; S.badge = S.badge === false; renderFrameStrip(); drawOverlay(); };
   el.appendChild(lb);
+  if (S.mode === 'upload' && S.screen === 'cam') {
+    const fb = document.createElement('button');
+    fb.className = 'fchip label on';
+    fb.title = 'Show the whole photo (Fit) or fill the frame (Fill)';
+    fb.innerHTML = `<span class="fthumb plain">${UP.fit === 'fit' ? '🖼️' : '🔲'}</span><span class="fname">${UP.fit === 'fit' ? 'Fit: whole photo' : 'Fill: crop to frame'}</span>`;
+    fb.onclick = () => { UP.fit = UP.fit === 'fit' ? 'fill' : 'fit'; drawUploadPreview(); renderFrameStrip(); };
+    el.appendChild(fb);
+  }
   list.forEach(fr => {
     const b = document.createElement('button');
     b.className = 'fchip' + (S.frame && S.frame.name === fr.name ? ' on' : '');
@@ -1137,6 +1166,7 @@ function showReview(cap) {
   if (cap.kind === 'photo') { img.src = cap.url; vid.removeAttribute('src'); vid.load(); }
   else { vid.src = cap.url; img.removeAttribute('src'); }
   $('coverBtn').classList.toggle('hidden', cap.kind !== 'photo');
+  $('retake').textContent = cap.uploaded ? '🖼️ Change frame' : '🔁 Try again';
   $('note').value = '';
   $('notePanel').classList.add('hidden');
   $('save').textContent = '✅ Save';
@@ -1148,6 +1178,7 @@ function retake() {
   if (S.screen !== 'review') return;
   $('revVid').pause();
   clearCapture();
+  if (S.mode === 'upload' && UP.img) { openUploadScreen(); return; }
   go('cam');
   openCamera(S.mode);
 }
@@ -1165,7 +1196,8 @@ async function save() {
     id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
     kind: cap.kind, blob: cap.blob, mime: cap.mime, takenAt: cap.takenAt, durationSec: cap.durationSec,
     staff: S.staff ? S.staff.name : '', group: S.staff ? S.staff.group : '',
-    focus: S.focus ? S.focus.name : '', frame: cap.frame || '', note: $('note').value.trim().slice(0, 300)
+    focus: S.focus ? S.focus.name : '', frame: cap.frame || '',
+    note: ((cap.uploaded ? '📤 Uploaded photo' : '') + (cap.uploaded && $('note').value.trim() ? ' · ' : '') + $('note').value.trim()).slice(0, 300)
   };
   addRecent(cap);
   clearCapture();
@@ -1706,6 +1738,105 @@ function dayLabel(d) {
   if (d.toDateString() === t.toDateString()) return 'Today';
   if (d.toDateString() === y.toDateString()) return 'Yesterday';
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: d.getFullYear() === t.getFullYear() ? undefined : 'numeric' });
+}
+
+/* ───────── 📤 Upload a photo already taken: pick → choose frame → review → save ───────── */
+const UP = { img: null, when: null, name: '', fit: 'fit', blurBg: null };
+
+function pickUploadFile() {
+  let inp = $('upFile');
+  inp.value = '';
+  inp.click();
+}
+
+async function onUploadChosen(e) {
+  const f = e.target.files && e.target.files[0];
+  S.lastTouch = Date.now();
+  if (!f) return;
+  if (!/^image\//.test(f.type) && !/\.(jpe?g|png|gif|webp|heic|heif)$/i.test(f.name)) { toast('Please choose a photo.'); return; }
+  const url = URL.createObjectURL(f);
+  const im = new Image();
+  try {
+    im.src = url;
+    await im.decode();                        // browsers apply the photo's rotation (EXIF) automatically
+  } catch (err) {
+    URL.revokeObjectURL(url);
+    toast(/heic|heif/i.test(f.type + f.name) ? 'This device can\'t open HEIC photos. Share it as JPEG, or upload from an iPhone.' : 'Couldn\'t open that photo.');
+    return;
+  }
+  const lm = f.lastModified ? new Date(f.lastModified) : null;
+  UP.img = im; UP.name = f.name; UP.blurBg = null;
+  UP.when = lm && !isNaN(lm) && lm <= new Date() ? lm : new Date();
+  UP.fit = (im.naturalWidth / im.naturalHeight) < 1.5 ? 'fit' : 'fill';   // portrait/square: fit; wide: fill
+  openUploadScreen();
+}
+
+function openUploadScreen() {
+  S.mode = 'upload';
+  stopStream();
+  go('cam');
+  S.cancel = false;
+  $('live').classList.add('hidden');
+  $('upCanvas').classList.remove('hidden');
+  $('rec').classList.add('hidden'); $('prog').style.width = '0';
+  camMsg('');
+  const sh = $('shoot');
+  sh.className = 'shoot'; sh.textContent = '✅ Use photo'; sh.disabled = false;
+  $('upAgain').classList.remove('hidden');
+  $('scr-cam').classList.add('upmode');
+  renderFrameStrip();
+  drawUploadPreview();
+  drawOverlay();
+}
+
+/* leave upload mode (camera screens restore the live video) */
+function endUploadMode() {
+  $('live').classList.remove('hidden');
+  $('upCanvas').classList.add('hidden');
+  $('upAgain').classList.add('hidden');
+  $('scr-cam').classList.remove('upmode');
+}
+
+/* Fit = whole photo with a soft blurred backdrop; Fill = crop to fill the 16:9 frame */
+function drawUploadImage(ctx) {
+  const im = UP.img; if (!im) return;
+  const iw = im.naturalWidth, ih = im.naturalHeight;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  if (UP.fit === 'fill') {
+    const s = Math.max(W / iw, H / ih), dw = iw * s, dh = ih * s;
+    ctx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    return;
+  }
+  // blurred backdrop: tiny copy scaled up (works on every browser, no ctx.filter needed)
+  if (!UP.blurBg) {
+    const t = document.createElement('canvas'); t.width = 40; t.height = 22;
+    const tx = t.getContext('2d'); const s0 = Math.max(40 / iw, 22 / ih);
+    tx.drawImage(im, (40 - iw * s0) / 2, (22 - ih * s0) / 2, iw * s0, ih * s0);
+    UP.blurBg = t;
+  }
+  ctx.save(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(UP.blurBg, 0, 0, W, H);
+  ctx.fillStyle = 'rgba(14,26,51,.35)'; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+  const s = Math.min(W / iw, H / ih), dw = iw * s, dh = ih * s;
+  ctx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+}
+function drawUploadPreview() {
+  const c = $('upCanvas'); drawUploadImage(c.getContext('2d'));
+}
+
+async function useUploadedPhoto() {
+  if (!UP.img) return;
+  S.busy = true; $('shoot').disabled = true;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  drawUploadImage(ctx);
+  drawFrame(ctx, UP.when);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', JPEG_QUALITY));
+  S.busy = false; $('shoot').disabled = false;
+  if (!blob || S.screen !== 'cam') return;
+  showReview({ kind: 'photo', blob, mime: 'image/jpeg', takenAt: UP.when.toISOString(), durationSec: 0,
+    frame: S.frame ? S.frame.name : '', poster: makePoster(c), uploaded: true });
 }
 
 /* ───────── 🐯 Cover faces: tigers over faces, any number, movable + resizable ─────────
